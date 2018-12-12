@@ -30,6 +30,7 @@ public class PostionGoogle extends AppCompatActivity {
     protected static final int REQUEST_CHECK_SETTINGS = 0x1;
 
     private Button btnStartLocationUpdate;
+    private Button btnStopLocationUpdates;
     private TextView txtLocation;
     private boolean mRequestingLocationUpdates = true;
     private FusedLocationProviderClient mFusedLocationClient;
@@ -46,7 +47,23 @@ public class PostionGoogle extends AppCompatActivity {
 
         txtLocation  = findViewById(R.id.txtLocation);
         btnStartLocationUpdate = findViewById(R.id.btnStartLocationUpdates);
+        btnStopLocationUpdates = findViewById(R.id.btnStopLocationUpdates);
 
+        btnStartLocationUpdate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                createLocationRequest();
+            }
+        });
+
+        btnStopLocationUpdates.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                stopLocationUpdates();
+            }
+        });
+
+        //CallBack - sem prijde zpatko poloha, kdyz se zmeni, takovej listener
         mLocationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
@@ -75,12 +92,7 @@ public class PostionGoogle extends AppCompatActivity {
             return;
         }
 
-        btnStartLocationUpdate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                createLocationRequest();
-            }
-        });
+        //tohle natahne posledni polohu - hodi se pro zamereni mapy na zacatku
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         mFusedLocationClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
             @Override
@@ -94,12 +106,11 @@ public class PostionGoogle extends AppCompatActivity {
             }
         });
 
-
     }
 
     protected void createLocationRequest() {
-        //vytvoří se požadavek na polohu
 
+        //vytvoří se požadavek na polohu
         mLocationRequest.setInterval(500);
         mLocationRequest.setFastestInterval(1000);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
@@ -117,7 +128,7 @@ public class PostionGoogle extends AppCompatActivity {
             public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
                 // All location settings are satisfied. The client can initialize
                 // location requests here.
-                // ...
+                // Tady se to rozjede
                 startLocationUpdates();
             }
         });
@@ -166,8 +177,6 @@ public class PostionGoogle extends AppCompatActivity {
                     mLocationCallback,
                     null);
         }
-
-
     }
 
     @Override

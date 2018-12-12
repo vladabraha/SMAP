@@ -52,6 +52,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private float zAverage = 0;
     private int iteration = 0;
 
+    private final float alpha = 0.8f;
+    private float gravity[] = new float[3];
+    private float linear_acceleration[] = new float[3];
+
     private Button btnStart;
     private Button btnPause;
     private Button btnNew;
@@ -59,6 +63,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Button btnStartUpdates;
     private Button btnStopUpdates;
 
+    //Array bodu, ktere se budou vykreslovat na grafu
     private List<Float> zPoints = new ArrayList<Float>();
 
     private LocationManager locationManager;
@@ -87,10 +92,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         btnStartUpdates = findViewById(R.id.btnStartUpdates);
         btnStopUpdates = findViewById(R.id.btnStopUpdates);
 
+        //inicializace akcelerometru
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         accelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
-
+        //spusteni mereni z akcelerometru
         btnStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -112,7 +118,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         });
 
 
-
+        //spusteni aktualizace polohy
         btnStartUpdates.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -133,6 +139,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             @Override
             public void onClick(View view) {
                 Intent notificationIntent = new Intent(MainActivity.this, PostionGoogle.class);
+                //TODO PRO VYTVOŘENÍ SLUŽBY V POPŘEDÍ JE TŘEBA VYTVOŘIT TŘÍDU IMPLEMENTUJÍCÍ SERVICE
 //                PendingIntent pendingIntent =
 //                        PendingIntent.getActivity(MainActivity.this, 0, notificationIntent, 0);
 //                Notification notification =
@@ -143,9 +150,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //                                .setContentIntent(pendingIntent)
 //                                .setTicker(R.string.ticker_text)
 //                                .build();
-
+//
 //                startForeground(ONGOING_NOTIFICATION_ID, notification);
-//                startActivity(intent);
+                startActivity(notificationIntent);
             }
         });
 //        Log.d("TAG", "v locmodelu je ");
@@ -153,6 +160,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     }
 
+    //------------------------------------------------------------------------
+    // AKCELEROMETR
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
         //při prvním spuštění se načte aktuální hodnota (offset)  pro kalibraci
@@ -163,10 +172,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //        txtXValue.setText(sensorEvent.sensor.getVendor());
         float[] pole = sensorEvent.values.clone();
 
+        //TODO PRIPRADNE SMAZAT TOHLE POCITACI, POKUD SE BUDE POZIVAT VYPOCET OFFSETU OD GOOGLU
         //tady dostáváme aktuální hodnoty po odečtení offsetu
         float xValue = getElement(pole, 0) - offsetX;
         float yValue = getElement(pole, 1) - offsetY;
         float zValue = getElement(pole, 2) - offsetZ;
+
+        //HighPass filter by Google:
+        gravity[0] = alpha * gravity[0] + (1 - alpha) * getElement(pole, 0);
+        gravity[1] = alpha * gravity[1] + (1 - alpha) * getElement(pole, 1);
+        gravity[2] = alpha * gravity[2] + (1 - alpha) * getElement(pole, 2);
+
+        linear_acceleration[0] = getElement(pole, 0) - gravity[0];
+        linear_acceleration[1] = getElement(pole, 1) - gravity[1];
+        linear_acceleration[2] = getElement(pole, 2) - gravity[2];
 
         xAverage = xAverage + xValue;
         yAverage = yAverage + yValue;
@@ -174,12 +193,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         iteration++;
 
 
-        txtXValue.setText(String.valueOf(xValue));
-        txtYValue.setText(String.valueOf(yValue));
-        txtZValue.setText(String.valueOf(zValue));
+        txtXValue.setText(String.valueOf(linear_acceleration[0]));
+        txtYValue.setText(String.valueOf(linear_acceleration[1]));
+        txtZValue.setText(String.valueOf(linear_acceleration[2]));
 
-        zPoints.add(zValue);
-
+        //TODO TADY ZMENA KVULI GOOGLIMU OFFSETU
+//        zPoints.add(zValue);
+        zPoints.add(linear_acceleration[2]);
 
     }
 
@@ -240,6 +260,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
 
+    //------------------------------------------------------------------------
+    // POLOHA
     @SuppressLint("MissingPermission")
     private void startUpdates() {
 
