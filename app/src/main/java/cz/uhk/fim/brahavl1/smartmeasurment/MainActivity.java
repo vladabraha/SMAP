@@ -2,6 +2,9 @@ package cz.uhk.fim.brahavl1.smartmeasurment;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Notification;
+import android.app.PendingIntent;
+import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -63,6 +66,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private static final int povoleni_operator = 0;
     private static final int povoleni_gps = 1;
+
+    private static final int ONGOING_NOTIFICATION_ID = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -127,8 +132,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         btnNew.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, PostionGoogle.class);
-                startActivity(intent);
+                Intent notificationIntent = new Intent(MainActivity.this, PostionGoogle.class);
+//                PendingIntent pendingIntent =
+//                        PendingIntent.getActivity(MainActivity.this, 0, notificationIntent, 0);
+//                Notification notification =
+//                        new Notification.Builder(this, CHANNEL_DEFAULT_IMPORTANCE)
+//                                .setContentTitle(R.string.notification_title)
+//                                .setContentText(R.string.notification_message)
+//                                .setSmallIcon(R.drawable.notification_car)
+//                                .setContentIntent(pendingIntent)
+//                                .setTicker(R.string.ticker_text)
+//                                .build();
+
+//                startForeground(ONGOING_NOTIFICATION_ID, notification);
+//                startActivity(intent);
             }
         });
 //        Log.d("TAG", "v locmodelu je ");

@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">SmartMeasurment</string>
+    <string name="notification_title">SmartMeasurment</string>
+    <string name="notification_message">Prave bezi</string>
+    <string name="ticker_text">Kde jsem</string>
+
 </resources>
