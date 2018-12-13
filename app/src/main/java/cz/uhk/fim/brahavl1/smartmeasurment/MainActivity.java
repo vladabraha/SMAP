@@ -31,6 +31,9 @@ import com.jjoe64.graphview.series.LineGraphSeries;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.math3.*;
+import org.apache.commons.math3.stat.StatUtils;
+
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
     private TextView txtXValue;
@@ -74,6 +77,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private static final int ONGOING_NOTIFICATION_ID = 2;
 
+    private GraphView graph;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -92,6 +97,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         btnStartUpdates = findViewById(R.id.btnStartUpdates);
         btnStopUpdates = findViewById(R.id.btnStopUpdates);
 
+         graph = (GraphView) findViewById(R.id.graph);
+
         //inicializace akcelerometru
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         accelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -105,7 +112,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 yAverage = 0;
                 zAverage = 0;
                 iteration = 0;
-
+                zPoints.clear();
+                graph.removeAllSeries();
             }
         });
 
@@ -174,11 +182,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         //TODO PRIPRADNE SMAZAT TOHLE POCITACI, POKUD SE BUDE POZIVAT VYPOCET OFFSETU OD GOOGLU
         //tady dostáváme aktuální hodnoty po odečtení offsetu
-        float xValue = getElement(pole, 0) - offsetX;
-        float yValue = getElement(pole, 1) - offsetY;
-        float zValue = getElement(pole, 2) - offsetZ;
+//        float xValue = getElement(pole, 0) - offsetX;
+//        float yValue = getElement(pole, 1) - offsetY;
+//        float zValue = getElement(pole, 2) - offsetZ;
 
-        //HighPass filter by Google:
+//        xAverage = xAverage + xValue;
+//        yAverage = yAverage + yValue;
+//        zAverage = zAverage + zValue;
+//        iteration++;
+
+        //HighPass filter by Google: (v podstatě se vezme zrychlení 9,8 a to se od toho odečte
         gravity[0] = alpha * gravity[0] + (1 - alpha) * getElement(pole, 0);
         gravity[1] = alpha * gravity[1] + (1 - alpha) * getElement(pole, 1);
         gravity[2] = alpha * gravity[2] + (1 - alpha) * getElement(pole, 2);
@@ -186,11 +199,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         linear_acceleration[0] = getElement(pole, 0) - gravity[0];
         linear_acceleration[1] = getElement(pole, 1) - gravity[1];
         linear_acceleration[2] = getElement(pole, 2) - gravity[2];
-
-        xAverage = xAverage + xValue;
-        yAverage = yAverage + yValue;
-        zAverage = zAverage + zValue;
-        iteration++;
 
 
         txtXValue.setText(String.valueOf(linear_acceleration[0]));
@@ -204,27 +212,37 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void calculateAverageAndPlotGraph() {
-        xAverage = xAverage / (float) iteration;
-        yAverage = yAverage / (float) iteration;
-        zAverage = zAverage / (float) iteration;
+//        xAverage = xAverage / (float) iteration;
+//        yAverage = yAverage / (float) iteration;
+//        zAverage = zAverage / (float) iteration;
+//
+//        txtXValue.setText(String.valueOf(xAverage));
+//        txtYValue.setText(String.valueOf(yAverage));
+//        txtZValue.setText(String.valueOf(zAverage));
 
-        txtXValue.setText(String.valueOf(xAverage));
-        txtYValue.setText(String.valueOf(yAverage));
-        txtZValue.setText(String.valueOf(zAverage));
-
+        //TODO ZPŘEHLEDNIT KOD
+        //VYPOCET KLOUZAVEHO PRUMERU A JEHO VLOZENI DO GRAFU
         int length = zPoints.size();
-        DataPoint[] dataPoints = new DataPoint[length];
+        double[] dataForMovingAverage = new double[length]; //kvuli commons math, ktery berou jenom pole double
+        DataPoint[] dataPoints = new DataPoint[length]; //pole bodu pro graf
         int i = 0;
         for (float z : zPoints) {
-            dataPoints[i] = new DataPoint(i, z);
+            //do tohodle se pridavaj hodnoty z akcelerometru pro osu Z
+            dataForMovingAverage[i] = z;
+
+            //budeme počítat prumer pro poslednich 10 hodnot z dat a ty budeme vykreslovat
+            if (i<10){
+                double nextYValue = StatUtils.mean(dataForMovingAverage);
+                dataPoints[i] = new DataPoint(i, nextYValue);
+            }else{
+                double nextYValue = StatUtils.mean(dataForMovingAverage, i-10,10);
+                dataPoints[i] = new DataPoint(i, nextYValue);
+            }
             i++;
         }
-
-
-        GraphView graph = (GraphView) findViewById(R.id.graph);
+        //přidání dat do grafu
         LineGraphSeries<DataPoint> series = new LineGraphSeries<>(dataPoints);
         graph.addSeries(series);
-
 
     }
 
