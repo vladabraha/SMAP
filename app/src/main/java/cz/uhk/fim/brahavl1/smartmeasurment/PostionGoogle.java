@@ -53,12 +53,14 @@ public class PostionGoogle extends AppCompatActivity {
 
     private Map map;
 
+    private boolean permissionIsGranted = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_postion);
 
-        txtLocation  = findViewById(R.id.txtLocation);
+        txtLocation = findViewById(R.id.txtLocation);
         btnStartLocationUpdate = findViewById(R.id.btnStartLocationUpdates);
         btnStopLocationUpdates = findViewById(R.id.btnStopLocationUpdates);
 
@@ -116,11 +118,10 @@ public class PostionGoogle extends AppCompatActivity {
                     MapPolyline mapPolyline = new MapPolyline(polyline);
                     mapPolyline.setLineColor(Color.RED);
                     mapPolyline.setLineWidth(12);
-                   map.addMapObject(mapPolyline);
+                    map.addMapObject(mapPolyline);
                 }
             }
 
-            ;
         };
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -173,6 +174,8 @@ public class PostionGoogle extends AppCompatActivity {
                 // location requests here.
                 // Tady se to rozjede
                 startLocationUpdates();
+                permissionIsGranted = true;
+
             }
         });
 
@@ -215,10 +218,12 @@ public class PostionGoogle extends AppCompatActivity {
             // for ActivityCompat#requestPermissions for more details.
             ActivityCompat.requestPermissions(PostionGoogle.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
             return;
-        } else{
-            mFusedLocationClient.requestLocationUpdates(mLocationRequest,
-                    mLocationCallback,
-                    null);
+        } else {
+            if (mFusedLocationClient != null) {
+                mFusedLocationClient.requestLocationUpdates(mLocationRequest,
+                        mLocationCallback,
+                        null);
+            }
         }
     }
 
@@ -229,7 +234,8 @@ public class PostionGoogle extends AppCompatActivity {
     }
 
     private void stopLocationUpdates() {
-        mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+        if (mFusedLocationClient != null)
+            mFusedLocationClient.removeLocationUpdates(mLocationCallback);
     }
 
 }

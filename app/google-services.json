@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "102545836600",
+    "firebase_url": "https://smartmeasurment.firebaseio.com",
+    "project_id": "smartmeasurment",
+    "storage_bucket": "smartmeasurment.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:102545836600:android:bdcfe6109ada34e8",
+        "android_client_info": {
+          "package_name": "cz.uhk.fim.brahavl1.smartmeasurment"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "102545836600-5k79chhflhkknahh998pbboitbq4g4l6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD0zM_DE5a0VM9EwJZbmMfHwZwvtQ48bEw"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
