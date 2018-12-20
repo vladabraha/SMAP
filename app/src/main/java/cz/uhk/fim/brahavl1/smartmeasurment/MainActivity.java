@@ -201,13 +201,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         linear_acceleration[2] = getElement(pole, 2) - gravity[2];
 
 
-        txtXValue.setText(String.valueOf(linear_acceleration[0]));
-        txtYValue.setText(String.valueOf(linear_acceleration[1]));
-        txtZValue.setText(String.valueOf(linear_acceleration[2]));
+//        txtXValue.setText(String.valueOf(linear_acceleration[0]));
+//        txtYValue.setText(String.valueOf(linear_acceleration[1]));
+//        txtZValue.setText(String.valueOf(linear_acceleration[2]));
 
         //TODO TADY ZMENA KVULI GOOGLIMU OFFSETU
 //        zPoints.add(zValue);
         zPoints.add(linear_acceleration[2]);
+
+        calculateAverageAndPlotGraph();
 
     }
 
@@ -219,6 +221,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //        txtXValue.setText(String.valueOf(xAverage));
 //        txtYValue.setText(String.valueOf(yAverage));
 //        txtZValue.setText(String.valueOf(zAverage));
+        graph.removeAllSeries();
+        if(zPoints.size() > 75) zPoints.remove(0);
 
         //TODO ZPŘEHLEDNIT KOD
         //VYPOCET KLOUZAVEHO PRUMERU A JEHO VLOZENI DO GRAFU
