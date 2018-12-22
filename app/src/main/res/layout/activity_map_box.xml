@@ -5,37 +5,35 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".PositionGoogle">
-
+    tools:context=".MapBox">
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-
         <Button
-            android:id="@+id/btnStartLocationUpdates"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="start location update" />
+            android:text="start update"
+            android:id="@+id/startMapBoxUpdate"/>
+
 
         <Button
-            android:id="@+id/btnStopLocationUpdates"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="stop location updates" />
+            android:text="stop update"
+            android:layout_marginStart="10dp"
+            android:id="@+id/stopMapBoxUpdate"/>
+
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/txtLocation"
+
+    <com.mapbox.mapboxsdk.maps.MapView
+        android:id="@+id/mapView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="tady se bude ukazovat poloha" />
+        mapbox_styleUrl="mapbox://styles/mapbox/streets-v11"
+     />
 
-    <fragment
-        class="com.here.android.mpa.mapping.MapFragment"
-        android:id="@+id/mapfragment"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
 </LinearLayout>

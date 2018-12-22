@@ -1,18 +1,19 @@
 package cz.uhk.fim.brahavl1.smartmeasurment;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
+import android.nfc.Tag;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -26,75 +27,107 @@ import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.here.android.mpa.common.GeoCoordinate;
-import com.here.android.mpa.common.GeoPolyline;
-import com.here.android.mpa.common.OnEngineInitListener;
-import com.here.android.mpa.mapping.Map;
-import com.here.android.mpa.mapping.MapFragment;
-import com.here.android.mpa.mapping.MapPolyline;
+import com.mapbox.geojson.Feature;
+import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.geojson.LineString;
+import com.mapbox.geojson.Point;
+import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.annotations.PolylineOptions;
+import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.maps.MapView;
+import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.style.layers.LineLayer;
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
+import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
+import com.mapbox.mapboxsdk.style.sources.Source;
+
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class PostionGoogle extends AppCompatActivity {
+import timber.log.Timber;
+
+
+public class MapBox extends AppCompatActivity {
 
     protected static final int REQUEST_CHECK_SETTINGS = 0x1;
 
-    private Button btnStartLocationUpdate;
-    private Button btnStopLocationUpdates;
-    private TextView txtLocation;
     private boolean mRequestingLocationUpdates = true;
     private FusedLocationProviderClient mFusedLocationClient;
     private LocationCallback mLocationCallback;
 
     private LocationRequest mLocationRequest = new LocationRequest();
 
-    private Bundle outState;
+    private MapView mapView;
+    private List<Point> routeCoordinates;
+    public MapboxMap map;
 
-    private Map map;
+    private Button btnStartUpdate;
+    private Button btnStopUpdate;
 
-    private boolean permissionIsGranted = false;
-
+    @SuppressLint("MissingPermission")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_postion);
 
-        txtLocation = findViewById(R.id.txtLocation);
-        btnStartLocationUpdate = findViewById(R.id.btnStartLocationUpdates);
-        btnStopLocationUpdates = findViewById(R.id.btnStopLocationUpdates);
+        Mapbox.getInstance(this, "pk.eyJ1IjoidGVzdGVyMjQiLCJhIjoiY2pweDJ5Nm53MDZobzQycGpweWwzZHB2diJ9.bU0SVPkkHf1iQT8tte64xQ");
+        setContentView(R.layout.activity_map_box);
 
-        final MapFragment mapFragment = (MapFragment)
-                getFragmentManager().findFragmentById(R.id.mapfragment);
+        mapView = findViewById(R.id.mapView);
+        mapView.onCreate(savedInstanceState);
+        routeCoordinates = new ArrayList<>();
 
-        mapFragment.init(new OnEngineInitListener() {
+        mapView.getMapAsync(new OnMapReadyCallback() {
             @Override
-            public void onEngineInitializationCompleted(
-                    OnEngineInitListener.Error error) {
-                if (error == OnEngineInitListener.Error.NONE) {
-                    // now the map is ready to be used
-                    map = mapFragment.getMap();
-                    map.setCenter(new GeoCoordinate(49.196261,
-                            -123.004773), Map.Animation.NONE);
-                    // ...
-                } else {
-                    Toast.makeText(PostionGoogle.this, error.getDetails(), Toast.LENGTH_LONG).show();
+            public void onMapReady(MapboxMap mapboxMap) {
+                map = mapboxMap;
+
+
+                // MAPBOX UMI VYKRESLIT MAPU JENOM KDYŽ SE PUSTI - UPLNĚ DEBILNI
+
+
+            }
+        });
+
+        btnStartUpdate = findViewById(R.id.startMapBoxUpdate);
+        btnStopUpdate = findViewById(R.id.stopMapBoxUpdate);
+
+
+        btnStartUpdate.setOnClickListener(view ->  {
+                createLocationRequest();
+        });
+
+        btnStopUpdate.setOnClickListener(view ->  {
+                stopLocationUpdates();
+        });
+
+
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        //tohle natahne posledni polohu - hodi se pro zamereni mapy na zacatku
+        mFusedLocationClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
+            @Override
+            public void onSuccess(Location location) {
+                // Got last known location. In some rare situations this can be null.
+
+                if (location != null) {
+                    // Logic to handle location object
+                    routeCoordinates.add(Point.fromLngLat(location.getLongitude(), location.getLatitude()));
+                    drawLineOnMap(routeCoordinates);
+//                    Toast.makeText(this, "text", Toast.LENGTH_SHORT).show();
                 }
             }
-        });
 
-        btnStartLocationUpdate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                createLocationRequest();
-            }
-        });
-
-        btnStopLocationUpdates.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                stopLocationUpdates();
-            }
         });
 
         //CallBack - sem prijde zpatko poloha, kdyz se zmeni, takovej listener
@@ -107,51 +140,36 @@ public class PostionGoogle extends AppCompatActivity {
                 for (Location location : locationResult.getLocations()) {
                     // Update UI with location data
                     // ...
-                    txtLocation.setText(String.valueOf(location.getLongitude()));
-                    map.setCenter(new GeoCoordinate(location.getLatitude(), location.getLongitude()), Map.Animation.LINEAR);
-                    map.setZoomLevel(map.getMinZoomLevel());
-                    List<GeoCoordinate> testPoints = new ArrayList<>();
-                    testPoints.add(new GeoCoordinate(location.getLatitude(), location.getLongitude(), 10));
-                    testPoints.add(new GeoCoordinate(59.163, -123.137766, 10));
-                    testPoints.add(new GeoCoordinate(60.163, -123.137766, 10));
-                    GeoPolyline polyline = new GeoPolyline(testPoints);
-                    MapPolyline mapPolyline = new MapPolyline(polyline);
-                    mapPolyline.setLineColor(Color.RED);
-                    mapPolyline.setLineWidth(12);
-                    map.addMapObject(mapPolyline);
-                }
-            }
+                    routeCoordinates.add(Point.fromLngLat(location.getLongitude(), location.getLatitude()));
 
+                }
+
+               drawLineOnMap(routeCoordinates);
+            }
         };
-
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            ActivityCompat.requestPermissions(PostionGoogle.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-            return;
-        }
-
-        //tohle natahne posledni polohu - hodi se pro zamereni mapy na zacatku
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        mFusedLocationClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
-            @Override
-            public void onSuccess(Location location) {
-                // Got last known location. In some rare situations this can be null.
-
-                if (location != null) {
-                    // Logic to handle location object
-//                    txtLocation.setText(String.valueOf(location.getLongitude()));
-                }
-            }
-        });
-
     }
 
+    /**
+     * Draw line on map
+     *
+     * @param routeCoordinates The route to be drawn in the map's LineLayer that was set up above.
+     */
+    private void drawLineOnMap(List<Point> routeCoordinates) {
+        LatLng[] pointsArray = new LatLng[routeCoordinates.size()];
+        for (int i = 0; i < routeCoordinates.size(); i++) {
+            pointsArray[i] = new LatLng(routeCoordinates.get(i).latitude(), routeCoordinates.get(i).longitude());
+        }
+
+
+        if (map != null){
+            Timber.tag("poloha").d("uz neni null");
+            map.addPolyline(new PolylineOptions()
+                    .add(pointsArray)
+                    .color(Color.parseColor("#8a8acb"))
+                    .width(4));
+        }
+
+    }
     protected void createLocationRequest() {
 
         //vytvoří se požadavek na polohu
@@ -167,16 +185,12 @@ public class PostionGoogle extends AppCompatActivity {
         SettingsClient client = LocationServices.getSettingsClient(this);
         Task<LocationSettingsResponse> task = client.checkLocationSettings(builder.build());
 
-        task.addOnSuccessListener(this, new OnSuccessListener<LocationSettingsResponse>() {
-            @Override
-            public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
-                // All location settings are satisfied. The client can initialize
+        task.addOnSuccessListener(this, locationSettingsResponse ->  {
+                         // All location settings are satisfied. The client can initialize
                 // location requests here.
                 // Tady se to rozjede
                 startLocationUpdates();
-                permissionIsGranted = true;
 
-            }
         });
 
         task.addOnFailureListener(this, new OnFailureListener() {
@@ -189,7 +203,7 @@ public class PostionGoogle extends AppCompatActivity {
                         // Show the dialog by calling startResolutionForResult(),
                         // and check the result in onActivityResult().
                         ResolvableApiException resolvable = (ResolvableApiException) e;
-                        resolvable.startResolutionForResult(PostionGoogle.this,
+                        resolvable.startResolutionForResult(MapBox.this,
                                 REQUEST_CHECK_SETTINGS);
                     } catch (IntentSender.SendIntentException sendEx) {
                         // Ignore the error.
@@ -202,6 +216,7 @@ public class PostionGoogle extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        mapView.onResume();
         if (mRequestingLocationUpdates) {
             startLocationUpdates();
         }
@@ -216,8 +231,7 @@ public class PostionGoogle extends AppCompatActivity {
             //                                          int[] grantResults)
             // to handle the case where the user grants the permission. See the documentation
             // for ActivityCompat#requestPermissions for more details.
-            ActivityCompat.requestPermissions(PostionGoogle.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-            return;
+            ActivityCompat.requestPermissions(MapBox.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         } else {
             if (mFusedLocationClient != null) {
                 mFusedLocationClient.requestLocationUpdates(mLocationRequest,
@@ -231,11 +245,43 @@ public class PostionGoogle extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         stopLocationUpdates();
+        mapView.onPause();
     }
 
     private void stopLocationUpdates() {
         if (mFusedLocationClient != null)
             mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mapView.onStart();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mapView.onStop();
+    }
+
+
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        mapView.onLowMemory();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mapView.onDestroy();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        mapView.onSaveInstanceState(outState);
     }
 
 }

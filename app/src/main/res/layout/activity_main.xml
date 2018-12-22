@@ -8,33 +8,33 @@
     tools:context=".MainActivity">
 
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
-        android:gravity="center"
         android:id="@+id/txtXValue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="Hello World!"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
-        android:gravity="center"
         android:id="@+id/txtYValue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="Hello World!"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
+        android:id="@+id/txtZValue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
         android:gravity="center"
-        android:id="@+id/txtZValue"
+        android:text="Hello World!"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -46,24 +46,24 @@
         android:orientation="horizontal">
 
         <Button
+            android:id="@+id/btnPause"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="pause"
-            android:id="@+id/btnPause"/>
+            android:text="pause" />
 
         <Button
+            android:id="@+id/btnStart"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="start"
-            android:id="@+id/btnStart"/>
+            android:text="start" />
 
 
     </LinearLayout>
 
     <com.jjoe64.graphview.GraphView
+        android:id="@+id/graph"
         android:layout_width="match_parent"
-        android:layout_height="200dip"
-        android:id="@+id/graph" />
+        android:layout_height="200dip" />
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -71,10 +71,11 @@
         android:orientation="vertical">
 
         <TextView
+            android:id="@+id/txtPosition"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/txtPosition"
-            android:text="tady se ma zobrazit pozice"/>
+            android:text="tady se ma zobrazit pozice" />
+
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -82,22 +83,38 @@
 
 
             <Button
+                android:id="@+id/btnStartUpdates"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="start location updates"
-                android:id="@+id/btnStartUpdates"/>
+                android:text="start location updates" />
+
+            <Button
+                android:id="@+id/btnStopUpdates"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="stop location updates" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnNew"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Here maps activity" />
 
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="stop location updates"
-                android:id="@+id/btnStopUpdates"/>
+                android:layout_marginLeft="5dp"
+                android:id="@+id/btnMapBoxActivity"
+                android:text="MapBox"/>
         </LinearLayout>
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="nova aktivita"
-            android:id="@+id/btnNew"/>
+
+
 
     </LinearLayout>
 

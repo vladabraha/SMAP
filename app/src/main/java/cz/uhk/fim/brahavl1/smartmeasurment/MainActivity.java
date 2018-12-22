@@ -2,9 +2,6 @@ package cz.uhk.fim.brahavl1.smartmeasurment;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Notification;
-import android.app.PendingIntent;
-import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -15,6 +12,7 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -31,7 +29,6 @@ import com.jjoe64.graphview.series.LineGraphSeries;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math3.*;
 import org.apache.commons.math3.stat.StatUtils;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
@@ -62,12 +59,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Button btnStart;
     private Button btnPause;
     private Button btnNew;
+    private Button btnMapBox;
 
     private Button btnStartUpdates;
     private Button btnStopUpdates;
 
     //Array bodu, ktere se budou vykreslovat na grafu
-    private List<Float> zPoints = new ArrayList<Float>();
+    private List<Float> zPoints = new ArrayList<>();
 
     private LocationManager locationManager;
     private LocationListener locationListener;
@@ -84,6 +82,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
         txtXValue = findViewById(R.id.txtXValue);
         txtYValue = findViewById(R.id.txtYValue);
         txtZValue = findViewById(R.id.txtZValue);
@@ -93,20 +92,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         btnPause = findViewById(R.id.btnPause);
         btnStart = findViewById(R.id.btnStart);
         btnNew = findViewById(R.id.btnNew);
+        btnMapBox = findViewById(R.id.btnMapBoxActivity);
 
         btnStartUpdates = findViewById(R.id.btnStartUpdates);
         btnStopUpdates = findViewById(R.id.btnStopUpdates);
 
-         graph = (GraphView) findViewById(R.id.graph);
+         graph = findViewById(R.id.graph);
 
         //inicializace akcelerometru
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         accelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
         //spusteni mereni z akcelerometru
-        btnStart.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        btnStart.setOnClickListener(view ->  {
                 onResume();
                 xAverage = 0;
                 yAverage = 0;
@@ -114,7 +112,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 iteration = 0;
                 zPoints.clear();
                 graph.removeAllSeries();
-            }
         });
 
         btnPause.setOnClickListener(new View.OnClickListener() {
@@ -127,26 +124,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
 
         //spusteni aktualizace polohy
-        btnStartUpdates.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        btnStartUpdates.setOnClickListener(view ->  {
                 checkPermission();
 //                startUpdates();
-            }
         });
 
 
-        btnStopUpdates.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        btnStopUpdates.setOnClickListener(view ->  {
                 stopUpdates();
-            }
         });
 
-        btnNew.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent notificationIntent = new Intent(MainActivity.this, PostionGoogle.class);
+        btnNew.setOnClickListener(view ->  {
+                Intent notificationIntent = new Intent(MainActivity.this, PositionGoogle.class);
                 //TODO PRO VYTVOŘENÍ SLUŽBY V POPŘEDÍ JE TŘEBA VYTVOŘIT TŘÍDU IMPLEMENTUJÍCÍ SERVICE
 //                PendingIntent pendingIntent =
 //                        PendingIntent.getActivity(MainActivity.this, 0, notificationIntent, 0);
@@ -161,7 +150,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //
 //                startForeground(ONGOING_NOTIFICATION_ID, notification);
                 startActivity(notificationIntent);
-            }
+        });
+
+        btnMapBox.setOnClickListener(view ->  {
+                Intent mapBox = new Intent(MainActivity.this, MapBox.class);
+                startActivity(mapBox);
         });
 //        Log.d("TAG", "v locmodelu je ");
 
@@ -256,7 +249,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         offsetY = getElement(pole, 1);
         offsetZ = getElement(pole, 2);
         firstRun = false;
-        return;
     }
 
     public float getElement(float[] arrayOfFloat, int index) {
@@ -330,7 +322,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
+                                           @NonNull String permissions[], @NonNull int[] grantResults) {
         switch (requestCode) {
             case povoleni_gps : {
                 // If request is cancelled, the result arrays are empty.
