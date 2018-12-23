@@ -41,7 +41,12 @@
             android:name="com.here.android.maps.apptoken"
             android:value="FplQgMFUP28JljqB5VSW-A" />
 
-        <activity android:name=".MapBox"></activity>
+        <activity android:name=".MapBox" />
+
+        <service
+            android:name=".ForegroundService"
+            android:enabled="true"
+            android:exported="true"></service>
     </application>
 
 </manifest>

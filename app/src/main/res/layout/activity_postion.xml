@@ -27,6 +27,18 @@
             android:text="stop location updates" />
     </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+    </LinearLayout>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/btnForegroundServise"
+        android:text="start foreground"/>
+
+
     <TextView
         android:id="@+id/txtLocation"
         android:layout_width="wrap_content"

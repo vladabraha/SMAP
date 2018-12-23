@@ -141,9 +141,7 @@ public class MapBox extends AppCompatActivity {
                     // Update UI with location data
                     // ...
                     routeCoordinates.add(Point.fromLngLat(location.getLongitude(), location.getLatitude()));
-
                 }
-
                drawLineOnMap(routeCoordinates);
             }
         };

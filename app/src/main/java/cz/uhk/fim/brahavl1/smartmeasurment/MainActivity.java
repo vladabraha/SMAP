@@ -2,6 +2,8 @@ package cz.uhk.fim.brahavl1.smartmeasurment;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -30,6 +32,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.math3.stat.StatUtils;
+
+import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
@@ -114,6 +118,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 graph.removeAllSeries();
         });
 
+
         btnPause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -133,6 +138,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         btnStopUpdates.setOnClickListener(view ->  {
                 stopUpdates();
         });
+
 
         btnNew.setOnClickListener(view ->  {
                 Intent notificationIntent = new Intent(MainActivity.this, PositionGoogle.class);

@@ -58,6 +58,7 @@
             android:text="start" />
 
 
+
     </LinearLayout>
 
     <com.jjoe64.graphview.GraphView

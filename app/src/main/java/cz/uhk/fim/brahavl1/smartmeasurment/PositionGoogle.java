@@ -1,12 +1,20 @@
 package cz.uhk.fim.brahavl1.smartmeasurment;
 
 import android.Manifest;
+import android.app.Notification;
+import android.app.PendingIntent;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
 import android.content.IntentSender;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
+import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -36,7 +44,7 @@ import com.here.android.mpa.mapping.MapPolyline;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PositionGoogle extends AppCompatActivity {
+public class PositionGoogle extends AppCompatActivity implements ForegroundService.Callbacks {
 
     protected static final int REQUEST_CHECK_SETTINGS = 0x1;
 
@@ -49,6 +57,9 @@ public class PositionGoogle extends AppCompatActivity {
 
     private List<GeoCoordinate> testPoints = new ArrayList<>();
 
+    ForegroundService mService;
+    boolean mBound = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,6 +68,8 @@ public class PositionGoogle extends AppCompatActivity {
         txtLocation = findViewById(R.id.txtLocation);
         Button btnStartLocationUpdate = findViewById(R.id.btnStartLocationUpdates);
         Button btnStopLocationUpdates = findViewById(R.id.btnStopLocationUpdates);
+
+        Button btnStartForegroundService = findViewById(R.id.btnForegroundServise);
 
         final MapFragment mapFragment = (MapFragment)
                 getFragmentManager().findFragmentById(R.id.mapfragment);
@@ -68,8 +81,8 @@ public class PositionGoogle extends AppCompatActivity {
                 if (error == OnEngineInitListener.Error.NONE) {
                     // now the map is ready to be used
                     map = mapFragment.getMap();
-                    map.setCenter(new GeoCoordinate(49.196261,
-                            -123.004773), Map.Animation.NONE);
+                    map.setCenter(new GeoCoordinate(50.2105358,
+                            15.8343583), Map.Animation.NONE);
                     // ...
                 } else {
                     Toast.makeText(PositionGoogle.this, error.getDetails(), Toast.LENGTH_LONG).show();
@@ -85,7 +98,16 @@ public class PositionGoogle extends AppCompatActivity {
                 stopLocationUpdates();
         });
 
-        //CallBack - sem prijde zpatko poloha, kdyz se zmeni, takovej listener
+        //spustí foreground service
+        Intent intent = new Intent(this, ForegroundService.class);
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+        ContextCompat.startForegroundService(this, intent);
+
+        btnStartForegroundService.setOnClickListener(view -> {
+            mService.createLocationRequest();
+        });
+
+//        //CallBack - sem prijde zpatko poloha, kdyz se zmeni, takovej listener
         mLocationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
@@ -94,7 +116,6 @@ public class PositionGoogle extends AppCompatActivity {
                 }
                 for (Location location : locationResult.getLocations()) {
                     // Update UI with location data
-                    // ...
                     if (map != null){
                         txtLocation.setText(String.valueOf(location.getLongitude()));
                         testPoints.add(new GeoCoordinate(location.getLatitude(), location.getLongitude(), 10));
@@ -111,14 +132,8 @@ public class PositionGoogle extends AppCompatActivity {
 
         };
 
+        //provede dotaz na opravenni a pripadne se zepta o povoleni
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
             ActivityCompat.requestPermissions(PositionGoogle.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
             return;
         }
@@ -130,7 +145,7 @@ public class PositionGoogle extends AppCompatActivity {
             public void onSuccess(Location location) {
                 // Got last known location. In some rare situations this can be null.
 
-                if (location != null) {
+                if (location != null && map != null) {
                     // Logic to handle location object
 //                    txtLocation.setText(String.valueOf(location.getLongitude()));
                     map.setZoomLevel(map.getMaxZoomLevel());
@@ -141,6 +156,9 @@ public class PositionGoogle extends AppCompatActivity {
 
     }
 
+    /**
+     * nastaveni dotazu na polohu a spusteni updatů
+     */
     protected void createLocationRequest() {
 
         //vytvoří se požadavek na polohu
@@ -190,15 +208,12 @@ public class PositionGoogle extends AppCompatActivity {
 
     }
 
+    /**
+     * spusti looper na dotaz na aktualni polohu, je nutno v oncreate nejdriv nadefinovat, jak má update probihat
+     */
     private void startLocationUpdates() {
+        //tohle se zepta na opravnění k pozici, pokud neni
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
             ActivityCompat.requestPermissions(PositionGoogle.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         } else {
             if (mFusedLocationClient != null && mLocationCallback != null) {
@@ -212,7 +227,7 @@ public class PositionGoogle extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        stopLocationUpdates();
+//        stopLocationUpdates();
     }
 
     private void stopLocationUpdates() {
@@ -220,4 +235,62 @@ public class PositionGoogle extends AppCompatActivity {
             mFusedLocationClient.removeLocationUpdates(mLocationCallback);
     }
 
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+//        unbindService(mConnection);
+        mBound = false;
+    }
+
+    /**
+     * tohle slouží ke k připojení servisy - je pak možné volat její veřejné metody (a řídit ji)
+     */
+    private ServiceConnection mConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            ForegroundService.LocalBinder binder = (ForegroundService.LocalBinder) service;
+            mService = binder.getService();
+            mService.registerClient(PositionGoogle.this); //Activity register in the service as client for callabcks!
+            mBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mBound = false;
+        }
+    };
+
+    /**
+     * Implementace rozhraní pro komunikaci ze Servisy - tuhle metodu volame ze servisy na predavani dat
+     * @param points
+     */
+    @Override
+    public void updateClient(List<GeoCoordinate> points) {
+        if (map != null){
+            txtLocation.setText(String.valueOf(points.get(points.size()-1).getLongitude()));
+//            testPoints.add(new GeoCoordinate(location.getLatitude(), location.getLongitude(), 10));
+            if (points.size() > 2){
+                GeoPolyline polyline = new GeoPolyline(points);
+                MapPolyline mapPolyline = new MapPolyline(polyline);
+                mapPolyline.setLineColor(Color.RED);
+                mapPolyline.setLineWidth(12);
+                map.addMapObject(mapPolyline);
+            }
+        }
+    }
+
+    /**
+     * při stisknuti tlačítka zpět se zastavi služba na popředí
+     */
+    @Override
+    public void onBackPressed()
+    {
+        // code here to show dialog
+        super.onBackPressed();  // optional depending on your needs
+        mService.stopService();
+    }
 }
