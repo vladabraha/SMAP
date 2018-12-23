@@ -16,6 +16,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.location.Location;
+import android.nfc.Tag;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
@@ -133,6 +134,7 @@ public class ForegroundService extends Service {
     }
 
     public void createLocationRequest() {
+
         //vytvoří se požadavek na polohu
         mLocationRequest.setInterval(500);
         mLocationRequest.setFastestInterval(1000);
@@ -203,6 +205,7 @@ public class ForegroundService extends Service {
                 .setContentText("právě běží aktualizace polohy")
                 .setSmallIcon(R.drawable.ic_gps_fixed_black_24dp)
                 .setContentIntent(pendingIntent1)
+                .setPriority(NotificationCompat.PRIORITY_HIGH) //NUTNO PRO PODPORU NOTIFIKACE NA ANDROID 7 A NIŽŠÍ
                 .build();
 
         startForeground(1, notification);
@@ -226,6 +229,7 @@ public class ForegroundService extends Service {
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
         }//TODO - notifikace pro android 8.0 a menší
+
     }
 
     /**

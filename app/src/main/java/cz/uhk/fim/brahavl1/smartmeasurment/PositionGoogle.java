@@ -22,6 +22,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -30,6 +32,7 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResponse;
+import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -90,12 +93,12 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
             }
         });
 
-        btnStartLocationUpdate.setOnClickListener(view ->  {
-                createLocationRequest();
+        btnStartLocationUpdate.setOnClickListener(view -> {
+            createLocationRequest();
         });
 
-        btnStopLocationUpdates.setOnClickListener(view ->  {
-                stopLocationUpdates();
+        btnStopLocationUpdates.setOnClickListener(view -> {
+            stopLocationUpdates();
         });
 
         //spustí foreground service
@@ -103,8 +106,9 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
         ContextCompat.startForegroundService(this, intent);
 
+
         btnStartForegroundService.setOnClickListener(view -> {
-            mService.createLocationRequest();
+            createLocationRequestForForegroundService();
         });
 
 //        //CallBack - sem prijde zpatko poloha, kdyz se zmeni, takovej listener
@@ -116,10 +120,10 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
                 }
                 for (Location location : locationResult.getLocations()) {
                     // Update UI with location data
-                    if (map != null){
+                    if (map != null) {
                         txtLocation.setText(String.valueOf(location.getLongitude()));
                         testPoints.add(new GeoCoordinate(location.getLatitude(), location.getLongitude(), 10));
-                        if (testPoints.size() > 2){
+                        if (testPoints.size() > 2) {
                             GeoPolyline polyline = new GeoPolyline(testPoints);
                             MapPolyline mapPolyline = new MapPolyline(polyline);
                             mapPolyline.setLineColor(Color.RED);
@@ -149,18 +153,58 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
                     // Logic to handle location object
 //                    txtLocation.setText(String.valueOf(location.getLongitude()));
                     map.setZoomLevel(map.getMaxZoomLevel());
-                    if (map != null) map.setCenter(new GeoCoordinate(location.getLatitude(), location.getLongitude()), Map.Animation.LINEAR);
+                    if (map != null)
+                        map.setCenter(new GeoCoordinate(location.getLatitude(), location.getLongitude()), Map.Animation.LINEAR);
                 }
             }
         });
 
     }
 
+    private void createLocationRequestForForegroundService() {
+        //vytvoří se požadavek na polohu
+        mLocationRequest.setInterval(500);
+        mLocationRequest.setFastestInterval(1000);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        //tady se přihodí co se chce za pravnění
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
+                .addLocationRequest(mLocationRequest);
+        //dotaz na oprávnění
+        SettingsClient client = LocationServices.getSettingsClient(this);
+        Task<LocationSettingsResponse> task = client.checkLocationSettings(builder.build());
+        task.addOnSuccessListener(this, locationSettingsResponse -> {
+            // All location settings are satisfied. The client can initialize
+            // location requests here.
+            // Tady se to rozjede
+            mService.createLocationRequest();
+        });
+
+        //tady se to zeptá na oprávnění, pokud nejsou k dispozici
+        task.addOnFailureListener(this, new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                if (e instanceof ResolvableApiException) {
+                    // Location settings are not satisfied, but this can be fixed
+                    // by showing the user a dialog.
+                    try {
+                        // Show the dialog by calling startResolutionForResult(),
+                        // and check the result in onActivityResult().
+                        ResolvableApiException resolvable = (ResolvableApiException) e;
+                        resolvable.startResolutionForResult(PositionGoogle.this,
+                                REQUEST_CHECK_SETTINGS);
+                    } catch (IntentSender.SendIntentException sendEx) {
+                        // Ignore the error.
+                    }
+                }
+            }
+        });
+    }
+
     /**
      * nastaveni dotazu na polohu a spusteni updatů
      */
     protected void createLocationRequest() {
-
         //vytvoří se požadavek na polohu
         mLocationRequest.setInterval(500);
         mLocationRequest.setFastestInterval(1000);
@@ -174,13 +218,15 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
         SettingsClient client = LocationServices.getSettingsClient(this);
         Task<LocationSettingsResponse> task = client.checkLocationSettings(builder.build());
 
-        task.addOnSuccessListener(this, locationSettingsResponse ->  {
-                // All location settings are satisfied. The client can initialize
-                // location requests here.
-                // Tady se to rozjede
-                startLocationUpdates();
+        //dotaz na oprávnění
+        task.addOnSuccessListener(this, locationSettingsResponse -> {
+            // All location settings are satisfied. The client can initialize
+            // location requests here.
+            // Tady se to rozjede
+            startLocationUpdates();
         });
 
+        //tady se to zeptá na oprávnění, pokud nejsou k dispozici
         task.addOnFailureListener(this, new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
@@ -204,7 +250,7 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
     @Override
     protected void onResume() {
         super.onResume();
-         startLocationUpdates();
+        startLocationUpdates();
 
     }
 
@@ -223,6 +269,7 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
             }
         }
     }
+
 
     @Override
     protected void onPause() {
@@ -266,14 +313,15 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
 
     /**
      * Implementace rozhraní pro komunikaci ze Servisy - tuhle metodu volame ze servisy na predavani dat
-     * @param points
+     *
+     * @param points body ktere prijdou ze servisy
      */
     @Override
     public void updateClient(List<GeoCoordinate> points) {
-        if (map != null){
-            txtLocation.setText(String.valueOf(points.get(points.size()-1).getLongitude()));
+        if (map != null) {
+            txtLocation.setText(String.valueOf(points.get(points.size() - 1).getLongitude()));
 //            testPoints.add(new GeoCoordinate(location.getLatitude(), location.getLongitude(), 10));
-            if (points.size() > 2){
+            if (points.size() > 2) {
                 GeoPolyline polyline = new GeoPolyline(points);
                 MapPolyline mapPolyline = new MapPolyline(polyline);
                 mapPolyline.setLineColor(Color.RED);
@@ -287,8 +335,7 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
      * při stisknuti tlačítka zpět se zastavi služba na popředí
      */
     @Override
-    public void onBackPressed()
-    {
+    public void onBackPressed() {
         // code here to show dialog
         super.onBackPressed();  // optional depending on your needs
         mService.stopService();
