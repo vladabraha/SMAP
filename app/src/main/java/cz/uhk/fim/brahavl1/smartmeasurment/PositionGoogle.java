@@ -14,6 +14,7 @@ import android.location.Location;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -47,7 +48,7 @@ import com.here.android.mpa.mapping.MapPolyline;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PositionGoogle extends AppCompatActivity implements ForegroundService.Callbacks {
+public class PositionGoogle extends AppCompatActivity implements ForegroundService.Callbacks, NoticeDialogFragment.NoticeDialogListener {
 
     protected static final int REQUEST_CHECK_SETTINGS = 0x1;
 
@@ -98,7 +99,9 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
         });
 
         btnStopLocationUpdates.setOnClickListener(view -> {
-            stopLocationUpdates();
+            // Create an instance of the dialog fragment and show it
+            DialogFragment dialog = new NoticeDialogFragment();
+            dialog.show(getSupportFragmentManager(), "NoticeDialogFragment");
         });
 
         //spustí foreground service
@@ -339,5 +342,19 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
         // code here to show dialog
         super.onBackPressed();  // optional depending on your needs
         mService.stopService();
+    }
+
+
+    /**
+     * Implementace rozhraní pro komunikaci s dialogem (vrátí zpátky text z dialogu)
+     * @param dialog
+     * @param rideName v tomhle přijde zpátky text z dialogu
+     */
+
+    @Override
+    public void onDialogPositiveClick(DialogFragment dialog, String rideName) {
+        Toast.makeText(this, rideName,Toast.LENGTH_LONG).show();
+        stopLocationUpdates();
+
     }
 }

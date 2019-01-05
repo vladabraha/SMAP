@@ -228,7 +228,7 @@ public class ForegroundService extends Service {
             // or other notification behaviors after this
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
-        }//TODO - notifikace pro android 8.0 a menší
+        }
 
     }
 
