@@ -79,7 +79,6 @@ public class PositionGoogle extends AppCompatActivity implements SensorEventList
         txtLocation = findViewById(R.id.txtLocation);
         Button btnStartLocationUpdate = findViewById(R.id.btnStartLocationUpdates);
         Button btnStopLocationUpdates = findViewById(R.id.btnStopLocationUpdates);
-
         Button btnStartForegroundService = findViewById(R.id.btnForegroundService);
 
         //MAPA
@@ -145,21 +144,24 @@ public class PositionGoogle extends AppCompatActivity implements SensorEventList
                 for (Location location : locationResult.getLocations()) {
                     // Update UI with location data
                     if (map != null) {
-                        txtLocation.setText(String.valueOf(location.getLongitude()));
-                        locationPoints.add(new GeoCoordinate(location.getLatitude(), location.getLongitude(), 10));
-
                         //projdu vsechny kladny hodnoty (protoze je to jako sinusoida a dalo by to jinak 0), ktere se ulozili do zpoints a vezmu jejich prumer
                         float sum = 0;
                         int count = 0;
-                        for (Float point : zPoints){
-                            if (point > 0){
+                        for (Float point : zPoints) {
+                            if (point > 0) {
                                 sum += point;
                                 count++;
                             }
                         }
-                        zPointsAverage.add(sum/count); //tady uložím průměr za daný rámec do zPointsu
+                        if (count == 0) {
+                            zPoints.clear();
+                            return;
+                        }
+                        zPointsAverage.add(sum / count); //tady uložím průměr za daný rámec do zPointsu
                         zPoints.clear();
 
+                        txtLocation.setText(String.valueOf(location.getLongitude()));
+                        locationPoints.add(new GeoCoordinate(location.getLatitude(), location.getLongitude(), 10));
                         if (locationPoints.size() > 2) {
                             GeoPolyline polyline = new GeoPolyline(locationPoints);
                             MapPolyline mapPolyline = new MapPolyline(polyline);
@@ -406,7 +408,7 @@ public class PositionGoogle extends AppCompatActivity implements SensorEventList
 
     @Override
     public void onDialogPositiveClick(DialogFragment dialog, String rideName) {
-        Toast.makeText(this, "succesfuly saved into database",Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "succesfuly saved into database", Toast.LENGTH_LONG).show();
         stopLocationUpdates();
         Ride ride = new Ride(rideName, locationPoints, zPointsAverage);
         DatabaseConnector databaseConnector = new DatabaseConnector();
@@ -421,7 +423,7 @@ public class PositionGoogle extends AppCompatActivity implements SensorEventList
     /**
      * vrátí prvek z pole
      * @param arrayOfFloat pole ze kterho chceme získat data
-     * @param index pozice ze které chceme získat prvek
+     * @param index        pozice ze které chceme získat prvek
      * @return vrátí prvek na daném místě
      */
     public float getElement(float[] arrayOfFloat, int index) {
