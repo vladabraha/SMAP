@@ -5,4 +5,8 @@
     <color name="colorAccent">#D81B60</color>
     <color name="grey">#A9A9A9</color>
     <color name="white">#ffffff</color>
+    <color name="btn_purple">#45567F</color>
+    <color name="btn_text">#c7c6be</color>
+
+
 </resources>

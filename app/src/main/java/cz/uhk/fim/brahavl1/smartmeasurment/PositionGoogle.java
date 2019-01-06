@@ -80,7 +80,7 @@ public class PositionGoogle extends AppCompatActivity implements SensorEventList
         Button btnStartLocationUpdate = findViewById(R.id.btnStartLocationUpdates);
         Button btnStopLocationUpdates = findViewById(R.id.btnStopLocationUpdates);
 
-        Button btnStartForegroundService = findViewById(R.id.btnForegroundServise);
+        Button btnStartForegroundService = findViewById(R.id.btnForegroundService);
 
         //MAPA
         //---------------------------------------------------------------------------------------------------
@@ -406,12 +406,12 @@ public class PositionGoogle extends AppCompatActivity implements SensorEventList
 
     @Override
     public void onDialogPositiveClick(DialogFragment dialog, String rideName) {
-        Toast.makeText(this, rideName,Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "succesfuly saved into database",Toast.LENGTH_LONG).show();
         stopLocationUpdates();
         Ride ride = new Ride(rideName, locationPoints, zPointsAverage);
         DatabaseConnector databaseConnector = new DatabaseConnector();
         databaseConnector.saveRide(ride);
-
+        finish();
     }
 
     @Override

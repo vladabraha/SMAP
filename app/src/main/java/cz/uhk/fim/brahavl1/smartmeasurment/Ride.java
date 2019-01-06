@@ -5,12 +5,13 @@ import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
 import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 
 public class Ride {
 
     private String name;
-    private Timestamp timestamp;
+    private Date date;
     private List<GeoCoordinate> testPoints;
     private List<Float> accelerometerData;
 
@@ -19,7 +20,7 @@ public class Ride {
         this.name = name;
         this.testPoints = testPoints;
         this.accelerometerData = accelerometerData;
-        this.timestamp = new Timestamp(System.currentTimeMillis());
+        this.date = new Date();
     }
 
     public List<Float> getAccelerometerData() {
@@ -46,11 +47,11 @@ public class Ride {
         this.name = name;
     }
 
-    public Timestamp getTimestamp() {
-        return timestamp;
+    public Date getDate() {
+        return date;
     }
 
-    public void setTimestamp(Timestamp timestamp) {
-        this.timestamp = timestamp;
+    public void setDate(Date date) {
+        this.date = date;
     }
 }

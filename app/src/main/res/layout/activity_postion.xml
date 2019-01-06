@@ -7,47 +7,71 @@
     android:orientation="vertical"
     tools:context=".PositionGoogle">
 
-
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="vertical">
 
 
-        <Button
-            android:id="@+id/btnStartLocationUpdates"
+        <fragment
+            android:id="@+id/mapfragment"
+            class="com.here.android.mpa.mapping.MapFragment"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="0.8"/>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:orientation="horizontal"
+            android:paddingTop="5dp">
+
+
+            <Button
+                android:id="@+id/btnStartLocationUpdates"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@color/btn_purple"
+                android:padding="5dp"
+                android:text="start location update"
+                android:textColor="@color/btn_text" />
+
+            <Button
+                android:id="@+id/btnStopLocationUpdates"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/btn_purple"
+                android:textColor="@color/btn_text"
+                android:padding="5dp"
+                android:layout_weight="1"
+                android:text="stop location updates" />
+        </LinearLayout>
+
+        <LinearLayout
+
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="start location update" />
+            android:orientation="vertical">
 
-        <Button
-            android:id="@+id/btnStopLocationUpdates"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="stop location updates" />
+            <Button
+                android:id="@+id/btnForegroundService"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/btn_rounded"
+                android:textColor="@color/btn_text"
+                android:text="start foreground" />
+
+
+            <TextView
+                android:id="@+id/txtLocation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="tady se bude ukazovat poloha" />
+        </LinearLayout>
+
+
     </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
-
-    </LinearLayout>
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/btnForegroundServise"
-        android:text="start foreground"/>
-
-
-    <TextView
-        android:id="@+id/txtLocation"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="tady se bude ukazovat poloha" />
-
-    <fragment
-        class="com.here.android.mpa.mapping.MapFragment"
-        android:id="@+id/mapfragment"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
 </LinearLayout>

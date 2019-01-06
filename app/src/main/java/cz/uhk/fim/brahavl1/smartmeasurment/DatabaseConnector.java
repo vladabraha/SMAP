@@ -1,25 +1,24 @@
 package cz.uhk.fim.brahavl1.smartmeasurment;
 
+import android.support.annotation.NonNull;
 import android.util.Log;
 
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-public class DatabaseConnector{
+class DatabaseConnector{
 
-    final FirebaseDatabase database = FirebaseDatabase.getInstance();
-    DatabaseReference ref = database.getReference("server/saving-data/fireblog");
+    private final FirebaseDatabase database = FirebaseDatabase.getInstance();
 
 
-    public DatabaseConnector() {
+    DatabaseConnector() {
 
     }
 
-    public void writeToDatabase(){
+     void writeToDatabase(){
         // Write a message to the database
 //        FirebaseDatabase database = FirebaseDatabase.getInstance();
 //        DatabaseReference myRef = database.getReference("message");
@@ -27,26 +26,32 @@ public class DatabaseConnector{
 //        myRef.setValue("Hello, World!");
 //        mDatabase.child("users").child(userId).setValue(user);
         DatabaseReference myRef = database.getReference("message");
-//        DatabaseReference usersRef = ref.child("users");
+        DatabaseReference usersRef = myRef.child("users");
 
-        myRef.setValue("test");
+        usersRef.setValue("test");
     }
 
-    public void saveRide(Ride ride){
+
+    void saveRide(Ride ride){
 
         DatabaseReference myRef = database.getReference("ride");
-//        DatabaseReference usersRef = ref.child("users");
+        DatabaseReference saveRef = myRef.child(String.valueOf(ride.getDate()));
 
-        myRef.setValue(ride);
+//        Log.d("bagr", ride.getName());
+//        Log.d("bagr", String.valueOf(ride.getAccelerometerData().size()));
+//        Log.d("bagr", String.valueOf(ride.getTestPoints().size()));
+//        Log.d("bagr", String.valueOf(ride.getDate()));
+        saveRef.setValue(ride);
+
     }
 
-    public void readFromDatabase(){
+    void readFromDatabase(){
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference myRef = database.getReference("message");
         // Read from the database
         myRef.addValueEventListener(new ValueEventListener() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 // This method is called once with the initial value and again
                 // whenever data at this location is updated.
                 String value = dataSnapshot.getValue(String.class);
@@ -54,7 +59,7 @@ public class DatabaseConnector{
             }
 
             @Override
-            public void onCancelled(DatabaseError error) {
+            public void onCancelled(@NonNull DatabaseError error) {
                 // Failed to read value
             }
         });

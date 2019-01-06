@@ -77,6 +77,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private GraphView graph;
 
+    private boolean locationUpdateStarted = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -97,21 +99,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         btnStartUpdates = findViewById(R.id.btnStartUpdates);
         btnStopUpdates = findViewById(R.id.btnStopUpdates);
 
-         graph = findViewById(R.id.graph);
+        graph = findViewById(R.id.graph);
 
         //inicializace akcelerometru
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         accelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
         //spusteni mereni z akcelerometru
-        btnStart.setOnClickListener(view ->  {
-                onResume();
-                xAverage = 0;
-                yAverage = 0;
-                zAverage = 0;
-                iteration = 0;
-                zPoints.clear();
-                graph.removeAllSeries();
+        btnStart.setOnClickListener(view -> {
+            onResume();
+            xAverage = 0;
+            yAverage = 0;
+            zAverage = 0;
+            iteration = 0;
+            zPoints.clear();
+            graph.removeAllSeries();
         });
 
 
@@ -130,20 +132,24 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
 
         //spusteni aktualizace polohy
-        btnStartUpdates.setOnClickListener(view ->  {
-                checkPermission();
+        btnStartUpdates.setOnClickListener(view -> {
+            checkPermission();
+            locationUpdateStarted = true;
 //                startUpdates();
         });
 
 
-        btnStopUpdates.setOnClickListener(view ->  {
+        btnStopUpdates.setOnClickListener(view -> {
+            if (locationUpdateStarted){
                 stopUpdates();
+                locationUpdateStarted = false;
+            }
         });
 
 
-        btnNew.setOnClickListener(view ->  {
-                Intent notificationIntent = new Intent(MainActivity.this, PositionGoogle.class);
-                //TODO PRO VYTVOŘENÍ SLUŽBY V POPŘEDÍ JE TŘEBA VYTVOŘIT TŘÍDU IMPLEMENTUJÍCÍ SERVICE
+        btnNew.setOnClickListener(view -> {
+            Intent notificationIntent = new Intent(MainActivity.this, PositionGoogle.class);
+            //TODO PRO VYTVOŘENÍ SLUŽBY V POPŘEDÍ JE TŘEBA VYTVOŘIT TŘÍDU IMPLEMENTUJÍCÍ SERVICE
 //                PendingIntent pendingIntent =
 //                        PendingIntent.getActivity(MainActivity.this, 0, notificationIntent, 0);
 //                Notification notification =
@@ -156,12 +162,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //                                .build();
 //
 //                startForeground(ONGOING_NOTIFICATION_ID, notification);
-                startActivity(notificationIntent);
+            startActivity(notificationIntent);
         });
 
-        btnMapBox.setOnClickListener(view ->  {
-                Intent mapBox = new Intent(MainActivity.this, MapBox.class);
-                startActivity(mapBox);
+        btnMapBox.setOnClickListener(view -> {
+            Intent mapBox = new Intent(MainActivity.this, MapBox.class);
+            startActivity(mapBox);
         });
 //        Log.d("TAG", "v locmodelu je ");
 
@@ -222,7 +228,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //        txtYValue.setText(String.valueOf(yAverage));
 //        txtZValue.setText(String.valueOf(zAverage));
         graph.removeAllSeries();
-        if(zPoints.size() > 75) zPoints.remove(0);
+        if (zPoints.size() > 75) zPoints.remove(0);
 
         //TODO ZPŘEHLEDNIT KOD
         //VYPOCET KLOUZAVEHO PRUMERU A JEHO VLOZENI DO GRAFU
@@ -235,11 +241,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             dataForMovingAverage[i] = z;
 
             //budeme počítat prumer pro poslednich 10 hodnot z dat a ty budeme vykreslovat
-            if (i<10){
+            if (i < 10) {
                 double nextYValue = StatUtils.mean(dataForMovingAverage);
                 dataPoints[i] = new DataPoint(i, nextYValue);
-            }else{
-                double nextYValue = StatUtils.mean(dataForMovingAverage, i-10,10);
+            } else {
+                double nextYValue = StatUtils.mean(dataForMovingAverage, i - 10, 10);
                 dataPoints[i] = new DataPoint(i, nextYValue);
             }
             i++;
@@ -323,7 +329,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
     }
 
-    private void stopUpdates(){
+    private void stopUpdates() {
         locationManager.removeUpdates(locationListener);
     }
 
@@ -331,7 +337,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String permissions[], @NonNull int[] grantResults) {
         switch (requestCode) {
-            case povoleni_gps : {
+            case povoleni_gps: {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -342,7 +348,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 }
                 return;
             }
-            case  povoleni_operator: {
+            case povoleni_operator: {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -359,15 +365,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
-    private void checkPermission(){
+    private void checkPermission() {
 
         //pokud neni opravneni na polohu od operatora nebo gps, zobraz dotaz
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED ||
                 ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_COARSE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED )  {
+                        Manifest.permission.ACCESS_COARSE_LOCATION)
+                        != PackageManager.PERMISSION_GRANTED) {
 
             if (ContextCompat.checkSelfPermission(this,
                     Manifest.permission.ACCESS_FINE_LOCATION)
@@ -386,7 +392,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
                         povoleni_operator);
             }
-        }else{
+        } else {
             startUpdates();
         }
     }
