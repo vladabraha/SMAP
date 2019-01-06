@@ -1,34 +1,21 @@
 package cz.uhk.fim.brahavl1.smartmeasurment;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentSender;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.location.Location;
-import android.nfc.Tag;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
-import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
-import android.widget.Button;
-import android.widget.TextView;
-import android.widget.Toast;
 
-import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -37,18 +24,11 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResponse;
 import com.google.android.gms.location.SettingsClient;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.here.android.mpa.common.GeoCoordinate;
-import com.here.android.mpa.common.GeoPolyline;
-import com.here.android.mpa.mapping.Map;
-import com.here.android.mpa.mapping.MapPolyline;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
-import java.util.concurrent.Executor;
 
 public class ForegroundService extends Service {
     int mStartMode;       // indicates how to behave if the service is killed
@@ -59,7 +39,6 @@ public class ForegroundService extends Service {
     private FusedLocationProviderClient mFusedLocationClient;
     private LocationCallback mLocationCallback;
     private LocationRequest mLocationRequest = new LocationRequest();
-    protected static final int REQUEST_CHECK_SETTINGS = 0x1;
 
     private List<GeoCoordinate> points = new ArrayList<>();
 
@@ -174,11 +153,12 @@ public class ForegroundService extends Service {
 
     /**
      * slouží pro implementaci rozhrani - servisa má refereci na aktivitu, kterou si připojí
+     *
      * @param activity
      */
     //Here Activity register to the service as Callbacks client
-    public void registerClient(Activity activity){
-        this.activity = (Callbacks)activity;
+    public void registerClient(Activity activity) {
+        this.activity = (Callbacks) activity;
     }
 
 
@@ -191,8 +171,7 @@ public class ForegroundService extends Service {
     }
 
     /* Used to build and start foreground service. */
-    private void startForegroundService()
-    {
+    private void startForegroundService() {
         createNotificationChannel(); //tohle se doporučuje volat jak jen to jde - kdyžtak neudělá nic
 
         Intent notificationIntent = new Intent(this, MainActivity.class);
@@ -235,7 +214,7 @@ public class ForegroundService extends Service {
     /**
      * zastaví službu - musí se volat při ukončení aktivity, jinak jede služba na věky věkků
      */
-    public void stopService(){
+    public void stopService() {
         Intent serviceIntent = new Intent(this, ForegroundService.class);
         stopService(serviceIntent);
     }

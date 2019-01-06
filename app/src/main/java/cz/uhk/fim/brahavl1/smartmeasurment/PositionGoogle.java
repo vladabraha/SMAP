@@ -1,8 +1,6 @@
 package cz.uhk.fim.brahavl1.smartmeasurment;
 
 import android.Manifest;
-import android.app.Notification;
-import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -10,6 +8,10 @@ import android.content.IntentSender;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.location.Location;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
@@ -18,13 +20,10 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -33,7 +32,6 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResponse;
-import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -48,9 +46,18 @@ import com.here.android.mpa.mapping.MapPolyline;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PositionGoogle extends AppCompatActivity implements ForegroundService.Callbacks, NoticeDialogFragment.NoticeDialogListener {
+public class PositionGoogle extends AppCompatActivity implements SensorEventListener, ForegroundService.Callbacks, SaveDialogFragment.NoticeDialogListener {
 
     protected static final int REQUEST_CHECK_SETTINGS = 0x1;
+
+    private SensorManager mSensorManager;
+    private Sensor accelerometer;
+    private final float alpha = 0.8f;
+    private float gravity[] = new float[3];
+    private float linear_acceleration[] = new float[3];
+    //Array bodu, ktere se budou vykreslovat na grafu
+    private List<Float> zPoints = new ArrayList<>();
+    private List<Float> zPointsAverage = new ArrayList<>(); //v tomhle poli budou průměry k jednotlivým rámcům z gps
 
     private TextView txtLocation;
     private FusedLocationProviderClient mFusedLocationClient;
@@ -59,7 +66,7 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
 
     private Map map;
 
-    private List<GeoCoordinate> testPoints = new ArrayList<>();
+    private List<GeoCoordinate> locationPoints = new ArrayList<>();
 
     ForegroundService mService;
     boolean mBound = false;
@@ -75,6 +82,8 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
 
         Button btnStartForegroundService = findViewById(R.id.btnForegroundServise);
 
+        //MAPA
+        //---------------------------------------------------------------------------------------------------
         final MapFragment mapFragment = (MapFragment)
                 getFragmentManager().findFragmentById(R.id.mapfragment);
 
@@ -100,34 +109,59 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
 
         btnStopLocationUpdates.setOnClickListener(view -> {
             // Create an instance of the dialog fragment and show it
-            DialogFragment dialog = new NoticeDialogFragment();
-            dialog.show(getSupportFragmentManager(), "NoticeDialogFragment");
+            DialogFragment dialog = new SaveDialogFragment();
+            dialog.show(getSupportFragmentManager(), "SaveDialogFragment");
         });
 
+        //AKCELEROMETR
+        //---------------------------------------------------------------------------------------------------
+        //inicializace akcelerometru
+        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        accelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        mSensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+
+
+        //FOREGROUND SEERVICE
+        //---------------------------------------------------------------------------------------------------
         //spustí foreground service
         Intent intent = new Intent(this, ForegroundService.class);
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
         ContextCompat.startForegroundService(this, intent);
 
-
         btnStartForegroundService.setOnClickListener(view -> {
             createLocationRequestForForegroundService();
         });
 
+        //MAPA
+        //---------------------------------------------------------------------------------------------------
 //        //CallBack - sem prijde zpatko poloha, kdyz se zmeni, takovej listener
         mLocationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
                 if (locationResult == null) {
+                    zPoints.clear();
                     return;
                 }
                 for (Location location : locationResult.getLocations()) {
                     // Update UI with location data
                     if (map != null) {
                         txtLocation.setText(String.valueOf(location.getLongitude()));
-                        testPoints.add(new GeoCoordinate(location.getLatitude(), location.getLongitude(), 10));
-                        if (testPoints.size() > 2) {
-                            GeoPolyline polyline = new GeoPolyline(testPoints);
+                        locationPoints.add(new GeoCoordinate(location.getLatitude(), location.getLongitude(), 10));
+
+                        //projdu vsechny kladny hodnoty (protoze je to jako sinusoida a dalo by to jinak 0), ktere se ulozili do zpoints a vezmu jejich prumer
+                        float sum = 0;
+                        int count = 0;
+                        for (Float point : zPoints){
+                            if (point > 0){
+                                sum += point;
+                                count++;
+                            }
+                        }
+                        zPointsAverage.add(sum/count); //tady uložím průměr za daný rámec do zPointsu
+                        zPoints.clear();
+
+                        if (locationPoints.size() > 2) {
+                            GeoPolyline polyline = new GeoPolyline(locationPoints);
                             MapPolyline mapPolyline = new MapPolyline(polyline);
                             mapPolyline.setLineColor(Color.RED);
                             mapPolyline.setLineWidth(12);
@@ -163,6 +197,24 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
         });
 
     }
+
+    //------------------------------------------------------------------------
+    // AKCELEROMETR
+    @Override
+    public void onSensorChanged(SensorEvent sensorEvent) {
+        float[] pole = sensorEvent.values.clone();
+        //HighPass filter by Google: (v podstatě se vezme zrychlení 9,8 a to se od toho odečte
+//        gravity[0] = alpha * gravity[0] + (1 - alpha) * getElement(pole, 0);
+//        gravity[1] = alpha * gravity[1] + (1 - alpha) * getElement(pole, 1);
+        gravity[2] = alpha * gravity[2] + (1 - alpha) * getElement(pole, 2);
+
+//        linear_acceleration[0] = getElement(pole, 0) - gravity[0];
+//        linear_acceleration[1] = getElement(pole, 1) - gravity[1];
+        linear_acceleration[2] = getElement(pole, 2) - gravity[2];
+
+        zPoints.add(linear_acceleration[2]);
+    }
+
 
     private void createLocationRequestForForegroundService() {
         //vytvoří se požadavek na polohu
@@ -254,7 +306,7 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
     protected void onResume() {
         super.onResume();
         startLocationUpdates();
-
+        mSensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     /**
@@ -278,6 +330,7 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
     protected void onPause() {
         super.onPause();
 //        stopLocationUpdates();
+        mSensorManager.unregisterListener(this);
     }
 
     private void stopLocationUpdates() {
@@ -323,7 +376,7 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
     public void updateClient(List<GeoCoordinate> points) {
         if (map != null) {
             txtLocation.setText(String.valueOf(points.get(points.size() - 1).getLongitude()));
-//            testPoints.add(new GeoCoordinate(location.getLatitude(), location.getLongitude(), 10));
+//            locationPoints.add(new GeoCoordinate(location.getLatitude(), location.getLongitude(), 10));
             if (points.size() > 2) {
                 GeoPolyline polyline = new GeoPolyline(points);
                 MapPolyline mapPolyline = new MapPolyline(polyline);
@@ -355,6 +408,24 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
     public void onDialogPositiveClick(DialogFragment dialog, String rideName) {
         Toast.makeText(this, rideName,Toast.LENGTH_LONG).show();
         stopLocationUpdates();
+        Ride ride = new Ride(rideName, locationPoints, zPointsAverage);
+        DatabaseConnector databaseConnector = new DatabaseConnector();
+        databaseConnector.saveRide(ride);
 
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int i) {
+    }
+
+    /**
+     * vrátí prvek z pole
+     * @param arrayOfFloat pole ze kterho chceme získat data
+     * @param index pozice ze které chceme získat prvek
+     * @return vrátí prvek na daném místě
+     */
+    public float getElement(float[] arrayOfFloat, int index) {
+
+        return arrayOfFloat[index];
     }
 }

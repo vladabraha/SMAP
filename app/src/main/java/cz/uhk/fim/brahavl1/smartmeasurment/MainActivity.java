@@ -2,8 +2,6 @@ package cz.uhk.fim.brahavl1.smartmeasurment;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Notification;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -14,11 +12,11 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -28,12 +26,10 @@ import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.commons.math3.stat.StatUtils;
 
-import timber.log.Timber;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
@@ -124,6 +120,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             public void onClick(View view) {
                 onPause();
                 calculateAverageAndPlotGraph();
+
+
+                DatabaseConnector databaseConnector = new DatabaseConnector();
+                databaseConnector.writeToDatabase();
+                databaseConnector.readFromDatabase();
             }
         });
 
