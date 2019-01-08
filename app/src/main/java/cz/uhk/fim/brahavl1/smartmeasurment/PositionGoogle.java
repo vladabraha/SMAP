@@ -375,11 +375,13 @@ public class PositionGoogle extends AppCompatActivity implements SensorEventList
      * @param points body ktere prijdou ze servisy
      */
     @Override
-    public void updateClient(List<GeoCoordinate> points) {
+    public void updateClient(List<GeoCoordinate> points, List<Float> zPointsAverage ) {
         if (map != null) {
             txtLocation.setText(String.valueOf(points.get(points.size() - 1).getLongitude()));
 //            locationPoints.add(new GeoCoordinate(location.getLatitude(), location.getLongitude(), 10));
             if (points.size() > 2) {
+                locationPoints.addAll(points);
+                this.zPointsAverage.addAll(zPointsAverage);
                 GeoPolyline polyline = new GeoPolyline(points);
                 MapPolyline mapPolyline = new MapPolyline(polyline);
                 mapPolyline.setLineColor(Color.RED);

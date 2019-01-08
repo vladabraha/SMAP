@@ -123,10 +123,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 onPause();
                 calculateAverageAndPlotGraph();
 
-
-                DatabaseConnector databaseConnector = new DatabaseConnector();
-                databaseConnector.writeToDatabase();
-                databaseConnector.readFromDatabase();
             }
         });
 

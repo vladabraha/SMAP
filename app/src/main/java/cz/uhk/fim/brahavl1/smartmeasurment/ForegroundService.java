@@ -7,8 +7,13 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.location.Location;
 import android.os.Binder;
 import android.os.Build;
@@ -30,7 +35,7 @@ import com.here.android.mpa.common.GeoCoordinate;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ForegroundService extends Service {
+public class ForegroundService extends Service implements SensorEventListener {
     int mStartMode;       // indicates how to behave if the service is killed
     boolean mAllowRebind; // indicates whether onRebind should be used
     // Binder given to clients
@@ -41,6 +46,14 @@ public class ForegroundService extends Service {
     private LocationRequest mLocationRequest = new LocationRequest();
 
     private List<GeoCoordinate> points = new ArrayList<>();
+
+    private SensorManager mSensorManager;
+    private Sensor accelerometer;
+    private List<Float> zPoints = new ArrayList<>();
+    private List<Float> zPointsAverage = new ArrayList<>(); //v tomhle poli budou průměry k jednotlivým rámcům z gps
+    private final float alpha = 0.8f;
+    private float gravity[] = new float[3];
+    private float linear_acceleration[] = new float[3];
 
     Callbacks activity; //tímhle se můžou volat metody v interfacu
 
@@ -65,6 +78,13 @@ public class ForegroundService extends Service {
 
     @Override
     public void onCreate() {
+        //AKCELEROMETR
+        //---------------------------------------------------------------------------------------------------
+        //inicializace akcelerometru
+        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        accelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        mSensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+
         //CallBack - sem prijde zpatko poloha, kdyz se zmeni, takovej listener
         mLocationCallback = new LocationCallback() {
             @Override
@@ -74,15 +94,53 @@ public class ForegroundService extends Service {
                 }
                 for (Location location : locationResult.getLocations()) {
                     // Update UI with location data
-                    // ...
+                    float sum = 0;
+                    int count = 0;
+                    for (Float point : zPoints) {
+                        if (point > 0) {
+                            sum += point;
+                            count++;
+                        }
+                    }
+                    if (count == 0) {
+                        zPoints.clear();
+                        return;
+                    }
+                    zPointsAverage.add(sum / count); //tady uložím průměr za daný rámec do zPointsu
+                    zPoints.clear();
+
                     points.add(new GeoCoordinate(location.getLatitude(), location.getLongitude()));
-                    activity.updateClient(points);
+                    activity.updateClient(points, zPointsAverage);
                 }
             }
         };
 
         //inicializace provideru - bez toho neběží aktualizace polohy!
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+
+    }
+
+    //------------------------------------------------------------------------
+    // AKCELEROMETR
+    @Override
+    public void onSensorChanged(SensorEvent sensorEvent) {
+        float[] pole = sensorEvent.values.clone();
+        //HighPass filter by Google: (v podstatě se vezme zrychlení 9,8 a to se od toho odečte
+//        gravity[0] = alpha * gravity[0] + (1 - alpha) * getElement(pole, 0);
+//        gravity[1] = alpha * gravity[1] + (1 - alpha) * getElement(pole, 1);
+        gravity[2] = alpha * gravity[2] + (1 - alpha) * getElement(pole, 2);
+
+//        linear_acceleration[0] = getElement(pole, 0) - gravity[0];
+//        linear_acceleration[1] = getElement(pole, 1) - gravity[1];
+        linear_acceleration[2] = getElement(pole, 2) - gravity[2];
+
+        zPoints.add(linear_acceleration[2]);
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int i) {
+
     }
 
     @Override
@@ -167,7 +225,7 @@ public class ForegroundService extends Service {
      */
     //callbacks interface for communication with service clients!
     public interface Callbacks {
-        public void updateClient(List<GeoCoordinate> points);
+        void updateClient(List<GeoCoordinate> points, List<Float> zPointsAverage);
     }
 
     /* Used to build and start foreground service. */
@@ -217,5 +275,16 @@ public class ForegroundService extends Service {
     public void stopService() {
         Intent serviceIntent = new Intent(this, ForegroundService.class);
         stopService(serviceIntent);
+    }
+
+    /**
+     * vrátí prvek z pole
+     * @param arrayOfFloat pole ze kterho chceme získat data
+     * @param index        pozice ze které chceme získat prvek
+     * @return vrátí prvek na daném místě
+     */
+    public float getElement(float[] arrayOfFloat, int index) {
+
+        return arrayOfFloat[index];
     }
 }
