@@ -412,7 +412,12 @@ public class PositionGoogle extends AppCompatActivity implements SensorEventList
     public void onDialogPositiveClick(DialogFragment dialog, String rideName) {
         Toast.makeText(this, "succesfuly saved into database", Toast.LENGTH_LONG).show();
         stopLocationUpdates();
-        Ride ride = new Ride(rideName, locationPoints, zPointsAverage);
+        //tohle je tady protoze Firebase potrebuje prazdnej konstruktor a ten GeoCoordinate bohužel nema
+        List<Coordinate> coordinates = new ArrayList<>();
+        for (GeoCoordinate geoCoordinate: locationPoints){
+            coordinates.add(new Coordinate(geoCoordinate.getLongitude(), geoCoordinate.getLatitude()));
+        }
+        Ride ride = new Ride(rideName, coordinates, zPointsAverage);
         DatabaseConnector databaseConnector = new DatabaseConnector();
         databaseConnector.saveRide(ride);
         finish();

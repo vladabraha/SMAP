@@ -28,6 +28,7 @@ import com.jjoe64.graphview.series.LineGraphSeries;
 
 import org.apache.commons.math3.stat.StatUtils;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,11 +57,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private float gravity[] = new float[3];
     private float linear_acceleration[] = new float[3];
 
-    private Button btnStart;
-    private Button btnPause;
-    private Button btnNew;
-    private Button btnMapBox;
-
     private Button btnStartUpdates;
     private Button btnStopUpdates;
 
@@ -72,8 +68,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private static final int povoleni_operator = 0;
     private static final int povoleni_gps = 1;
-
-    private static final int ONGOING_NOTIFICATION_ID = 2;
 
     private GraphView graph;
 
@@ -91,10 +85,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         txtLocation = findViewById(R.id.txtPosition);
 
-        btnPause = findViewById(R.id.btnPause);
-        btnStart = findViewById(R.id.btnStart);
-        btnNew = findViewById(R.id.btnNew);
-        btnMapBox = findViewById(R.id.btnMapBoxActivity);
+        Button btnPause = findViewById(R.id.btnPause);
+        Button btnStart = findViewById(R.id.btnStart);
+        Button btnNew = findViewById(R.id.btnNew);
+        Button btnMapBox = findViewById(R.id.btnMapBoxActivity);
+        Button btnOverview = findViewById(R.id.btnOverView);
 
         btnStartUpdates = findViewById(R.id.btnStartUpdates);
         btnStopUpdates = findViewById(R.id.btnStopUpdates);
@@ -164,6 +159,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         btnMapBox.setOnClickListener(view -> {
             Intent mapBox = new Intent(MainActivity.this, MapBox.class);
             startActivity(mapBox);
+        });
+
+        btnOverview.setOnClickListener(view -> {
+            Intent rideOverview = new Intent(this, RideOverview.class);
+            startActivity(rideOverview);
         });
 //        Log.d("TAG", "v locmodelu je ");
 

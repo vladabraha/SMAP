@@ -1,26 +1,33 @@
 package cz.uhk.fim.brahavl1.smartmeasurment;
 
-import com.here.android.mpa.common.GeoCoordinate;
-import com.jjoe64.graphview.series.DataPoint;
-import com.jjoe64.graphview.series.LineGraphSeries;
+import android.os.Parcel;
+import android.os.Parcelable;
 
-import java.sql.Timestamp;
+import com.here.android.mpa.common.GeoCoordinate;
+
+import java.io.Serializable;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class Ride {
 
     private String name;
     private Date date;
-    private List<GeoCoordinate> testPoints;
+    private List<Coordinate> locationPoints;
     private List<Float> accelerometerData;
 
 
-    public Ride(String name, List<GeoCoordinate> testPoints, List<Float> accelerometerData) {
+    public Ride(String name, List<Coordinate> locationPoints, List<Float> accelerometerData) {
         this.name = name;
-        this.testPoints = testPoints;
+        this.locationPoints = locationPoints;
         this.accelerometerData = accelerometerData;
         this.date = new Date();
+    }
+
+    public Ride() {
     }
 
     public List<Float> getAccelerometerData() {
@@ -31,12 +38,12 @@ public class Ride {
         this.accelerometerData = accelerometerData;
     }
 
-    public List<GeoCoordinate> getTestPoints() {
-        return testPoints;
+    public List<Coordinate> getLocationPoints() {
+        return locationPoints;
     }
 
-    public void setTestPoints(List<GeoCoordinate> testPoints) {
-        this.testPoints = testPoints;
+    public void setLocationPoints(List<Coordinate> locationPoints) {
+        this.locationPoints = locationPoints;
     }
 
     public String getName() {
@@ -54,4 +61,6 @@ public class Ride {
     public void setDate(Date date) {
         this.date = date;
     }
+
+
 }
