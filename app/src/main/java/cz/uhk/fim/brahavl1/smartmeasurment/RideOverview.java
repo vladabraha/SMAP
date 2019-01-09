@@ -1,12 +1,18 @@
 package cz.uhk.fim.brahavl1.smartmeasurment;
 
+import android.graphics.Color;
+import android.nfc.Tag;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -17,11 +23,17 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RideOverview extends AppCompatActivity {
+public class RideOverview extends AppCompatActivity implements RecyclerItemTouchHelper.RecyclerItemTouchHelperListener {
 
     private RecyclerView recyclerView;
     private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
+
+    private DatabaseConnector databaseConnector = new DatabaseConnector();
+
+    private List<Ride> rideList = new ArrayList<>();
+
+    private LinearLayout linearLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,8 +50,13 @@ public class RideOverview extends AppCompatActivity {
         mLayoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(mLayoutManager);
 
+        //registruje touchHelper na recyclerView
+        ItemTouchHelper.SimpleCallback itemTouchHelperCallback = new RecyclerItemTouchHelper(0, ItemTouchHelper.LEFT, this);
+        new ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(recyclerView);
 
-        List<Ride> rideList = new ArrayList<>();
+        linearLayout = findViewById(R.id.linearLayoutRideOverView);
+
+
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference myRef = database.getReference("ride");
 
@@ -64,5 +81,55 @@ public class RideOverview extends AppCompatActivity {
             }
         });
 
+        //prida RecyclerTouchListener - posloucha události na recycleru - mělo by umožnovat poslouchat libovolny recycler
+        recyclerView.addOnItemTouchListener(new RecyclerTouchListener(getApplicationContext(), recyclerView, new RecyclerTouchListener.ClickListener() {
+            @Override
+            public void onClick(View view, int position) {
+                Ride ride = rideList.get(position);
+                Toast.makeText(getApplicationContext(), ride.getName() + " is selected!", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onLongClick(View view, int position) {
+                Ride ride = rideList.get(position);
+                Toast.makeText(getApplicationContext(), ride.getName() + " is selected!", Toast.LENGTH_SHORT).show();
+            }
+        }));
+
+    }
+
+    /** obslouzi gesto
+     * callback when recycler view is swiped
+     * item will be removed on swiped
+     * undo option will be provided in snackbar to restore the item
+     */
+    @Override
+    public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction, int position) {
+        if (viewHolder instanceof RideListAdapter.RideListViewHolder) {
+            // get the removed item name to display it in snack bar
+            String name = rideList.get(viewHolder.getAdapterPosition()).getName();
+
+            // backup of removed item for undo purpose
+            final Ride deletedItem = rideList.get(viewHolder.getAdapterPosition());
+            final int deletedIndex = viewHolder.getAdapterPosition();
+
+            // remove the item from recycler view - po provedeni gesta
+            ((RideListAdapter) mAdapter).removeItem(viewHolder.getAdapterPosition());
+
+
+            // showing snack bar with Undo option
+            Snackbar snackbar = Snackbar
+                    .make(linearLayout, name + " ride has been deleted", Snackbar.LENGTH_LONG);
+            snackbar.setAction("UNDO", view -> {
+                 // tady se udělá akce po kliknuti na tlačítko undo
+                ((RideListAdapter) mAdapter).restoreItem(deletedItem, deletedIndex);
+                databaseConnector.saveRide(deletedItem);
+
+            });
+            snackbar.setActionTextColor(Color.YELLOW);
+            snackbar.show();
+//            Log.d("hoo",String.valueOf(viewHolder.getAdapterPosition()));
+            databaseConnector.removeRide(deletedItem);
+        }
     }
 }

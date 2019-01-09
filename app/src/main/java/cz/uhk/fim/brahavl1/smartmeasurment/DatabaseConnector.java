@@ -17,15 +17,18 @@ import java.util.List;
 class DatabaseConnector {
 
     private final FirebaseDatabase database = FirebaseDatabase.getInstance();
-
+    private DatabaseReference myRef = database.getReference("ride");
     DatabaseConnector() {
     }
 
     void saveRide(Ride ride) {
-
-        DatabaseReference myRef = database.getReference("ride");
         DatabaseReference saveRef = myRef.child(String.valueOf(ride.getDate()));
-
         saveRef.setValue(ride);
+    }
+
+    void removeRide(Ride ride){
+        DatabaseReference delRef = myRef.child(String.valueOf(ride.getDate()));
+       delRef.removeValue();
+
     }
 }
