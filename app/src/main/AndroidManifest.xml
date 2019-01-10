@@ -34,7 +34,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".PositionGoogle"
-            android:launchMode= "singleTop"
+            android:launchMode= "singleInstance"
             android:parentActivityName=".MainActivity" />
 
         <meta-data
