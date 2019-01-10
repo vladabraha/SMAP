@@ -82,11 +82,7 @@ public class MapBox extends AppCompatActivity {
             @Override
             public void onMapReady(MapboxMap mapboxMap) {
                 map = mapboxMap;
-
-
                 // MAPBOX UMI VYKRESLIT MAPU JENOM KDYŽ SE PUSTI - UPLNĚ DEBILNI
-
-
             }
         });
 

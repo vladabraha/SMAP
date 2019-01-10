@@ -33,7 +33,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".PositionGoogle" />
+        <activity android:name=".PositionGoogle"
+            android:launchMode= "singleTop"
+            android:parentActivityName=".MainActivity" />
 
         <meta-data
             android:name="com.here.android.maps.appid"

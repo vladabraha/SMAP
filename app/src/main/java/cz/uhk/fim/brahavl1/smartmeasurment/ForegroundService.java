@@ -7,6 +7,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -232,7 +233,7 @@ public class ForegroundService extends Service implements SensorEventListener {
     private void startForegroundService() {
         createNotificationChannel(); //tohle se doporučuje volat jak jen to jde - kdyžtak neudělá nic
 
-        Intent notificationIntent = new Intent(this, MainActivity.class);
+        Intent notificationIntent = new Intent(this, PositionGoogle.class);
         PendingIntent pendingIntent1 = PendingIntent.getActivity(this,
                 0, notificationIntent, 0);
 

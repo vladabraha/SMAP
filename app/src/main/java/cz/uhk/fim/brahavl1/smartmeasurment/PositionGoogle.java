@@ -103,7 +103,15 @@ public class PositionGoogle extends AppCompatActivity implements SensorEventList
         });
 
         btnStartLocationUpdate.setOnClickListener(view -> {
-            createLocationRequest();
+            //Pro přepínání funkce tlačítka - jinak by musely bejt 2
+            if (btnStartLocationUpdate.getText() == "stop location update"){
+                DialogFragment dialog = new SaveDialogFragment();
+                dialog.show(getSupportFragmentManager(), "SaveDialogFragment");
+            }else{
+                createLocationRequest();
+                btnStartLocationUpdate.setText("stop location update");
+            }
+
         });
 
         btnStopLocationUpdates.setOnClickListener(view -> {
@@ -410,16 +418,20 @@ public class PositionGoogle extends AppCompatActivity implements SensorEventList
 
     @Override
     public void onDialogPositiveClick(DialogFragment dialog, String rideName) {
-        Toast.makeText(this, "succesfuly saved into database", Toast.LENGTH_LONG).show();
-        stopLocationUpdates();
         //tohle je tady protoze Firebase potrebuje prazdnej konstruktor a ten GeoCoordinate bohužel nema
         List<Coordinate> coordinates = new ArrayList<>();
+        stopLocationUpdates();
         for (GeoCoordinate geoCoordinate: locationPoints){
             coordinates.add(new Coordinate(geoCoordinate.getLongitude(), geoCoordinate.getLatitude()));
+        }
+        if (coordinates.size() == 0){
+            Toast.makeText(this,"not a single value has been recorded yet", Toast.LENGTH_LONG).show();
+            return;
         }
         Ride ride = new Ride(rideName, coordinates, zPointsAverage);
         DatabaseConnector databaseConnector = new DatabaseConnector();
         databaseConnector.saveRide(ride);
+        Toast.makeText(this, "succesfuly saved into database", Toast.LENGTH_LONG).show();
         finish();
     }
 
