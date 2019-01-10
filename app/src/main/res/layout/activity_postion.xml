@@ -31,23 +31,26 @@
 
             <Button
                 android:id="@+id/btnStartLocationUpdates"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:background="@color/btn_purple"
+                android:gravity="center"
                 android:padding="5dp"
-                android:text="start location update"
+                android:layout_marginRight="50dp"
+                android:layout_marginLeft="50dp"
+                android:background="@drawable/btn_rounded"
+                android:text="start measurement"
                 android:textColor="@color/btn_text" />
 
-            <Button
-                android:id="@+id/btnStopLocationUpdates"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@color/btn_purple"
-                android:textColor="@color/btn_text"
-                android:padding="5dp"
-                android:layout_weight="1"
-                android:text="stop location updates" />
+            <!--<Button-->
+                <!--android:id="@+id/btnStopLocationUpdates"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:background="@color/btn_purple"-->
+                <!--android:textColor="@color/btn_text"-->
+                <!--android:padding="5dp"-->
+                <!--android:layout_weight="1"-->
+                <!--android:text="stop location updates" />-->
         </LinearLayout>
 
         <LinearLayout
@@ -56,13 +59,13 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <Button
-                android:id="@+id/btnForegroundService"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/btn_rounded"
-                android:textColor="@color/btn_text"
-                android:text="start foreground" />
+            <!--<Button-->
+                <!--android:id="@+id/btnForegroundService"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:background="@drawable/btn_rounded"-->
+                <!--android:textColor="@color/btn_text"-->
+                <!--android:text="start foreground" />-->
 
 
             <TextView

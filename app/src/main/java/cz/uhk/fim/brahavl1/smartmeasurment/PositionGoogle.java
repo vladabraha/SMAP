@@ -78,8 +78,8 @@ public class PositionGoogle extends AppCompatActivity implements SensorEventList
 
         txtLocation = findViewById(R.id.txtLocation);
         Button btnStartLocationUpdate = findViewById(R.id.btnStartLocationUpdates);
-        Button btnStopLocationUpdates = findViewById(R.id.btnStopLocationUpdates);
-        Button btnStartForegroundService = findViewById(R.id.btnForegroundService);
+//        Button btnStopLocationUpdates = findViewById(R.id.btnStopLocationUpdates);
+//        Button btnStartForegroundService = findViewById(R.id.btnForegroundService);
 
         //MAPA
         //---------------------------------------------------------------------------------------------------
@@ -104,21 +104,21 @@ public class PositionGoogle extends AppCompatActivity implements SensorEventList
 
         btnStartLocationUpdate.setOnClickListener(view -> {
             //Pro přepínání funkce tlačítka - jinak by musely bejt 2
-            if (btnStartLocationUpdate.getText() == "stop location update"){
+            if (btnStartLocationUpdate.getText() == "save the ride"){
                 DialogFragment dialog = new SaveDialogFragment();
                 dialog.show(getSupportFragmentManager(), "SaveDialogFragment");
             }else{
                 createLocationRequest();
-                btnStartLocationUpdate.setText("stop location update");
+                btnStartLocationUpdate.setText("save the ride");
             }
 
         });
 
-        btnStopLocationUpdates.setOnClickListener(view -> {
-            // Create an instance of the dialog fragment and show it
-            DialogFragment dialog = new SaveDialogFragment();
-            dialog.show(getSupportFragmentManager(), "SaveDialogFragment");
-        });
+//        btnStopLocationUpdates.setOnClickListener(view -> {
+//            // Create an instance of the dialog fragment and show it
+//            DialogFragment dialog = new SaveDialogFragment();
+//            dialog.show(getSupportFragmentManager(), "SaveDialogFragment");
+//        });
 
         //AKCELEROMETR
         //---------------------------------------------------------------------------------------------------
@@ -135,9 +135,9 @@ public class PositionGoogle extends AppCompatActivity implements SensorEventList
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
         ContextCompat.startForegroundService(this, intent);
 
-        btnStartForegroundService.setOnClickListener(view -> {
-            createLocationRequestForForegroundService();
-        });
+//        btnStartForegroundService.setOnClickListener(view -> {
+//            createLocationRequestForForegroundService();
+//        });
 
         //MAPA
         //---------------------------------------------------------------------------------------------------
