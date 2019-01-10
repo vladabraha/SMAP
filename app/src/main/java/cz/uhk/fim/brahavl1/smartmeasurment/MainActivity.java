@@ -34,10 +34,6 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
-    private TextView txtXValue;
-    private TextView txtYValue;
-    private TextView txtZValue;
-
     private TextView txtLocation;
 
     private SensorManager mSensorManager;
@@ -48,10 +44,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private float offsetY;
     private float offsetZ;
 
-    private float xAverage = 0;
-    private float yAverage = 0;
-    private float zAverage = 0;
-    private int iteration = 0;
+//    private float xAverage = 0;
+//    private float yAverage = 0;
+//    private float zAverage = 0;
+//    private int iteration = 0;
 
     private final float alpha = 0.8f;
     private float gravity[] = new float[3];
@@ -78,11 +74,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
-        txtXValue = findViewById(R.id.txtXValue);
-        txtYValue = findViewById(R.id.txtYValue);
-        txtZValue = findViewById(R.id.txtZValue);
-
         txtLocation = findViewById(R.id.txtPosition);
 
         Button btnPause = findViewById(R.id.btnPause);
@@ -103,10 +94,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //spusteni mereni z akcelerometru
         btnStart.setOnClickListener(view -> {
             onResume();
-            xAverage = 0;
-            yAverage = 0;
-            zAverage = 0;
-            iteration = 0;
+//            xAverage = 0;
+//            yAverage = 0;
+//            zAverage = 0;
+//            iteration = 0;
             zPoints.clear();
             graph.removeAllSeries();
         });
