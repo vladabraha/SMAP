@@ -1,7 +1,7 @@
 package cz.uhk.fim.brahavl1.smartmeasurment;
 
+import android.content.Intent;
 import android.graphics.Color;
-import android.nfc.Tag;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -9,10 +9,8 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
-import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
-import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -54,6 +52,7 @@ public class RideOverview extends AppCompatActivity implements RecyclerItemTouch
         ItemTouchHelper.SimpleCallback itemTouchHelperCallback = new RecyclerItemTouchHelper(0, ItemTouchHelper.LEFT, this);
         new ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(recyclerView);
 
+        //vytažení layoutu pro snackbar (aby vedel kde se ma vytvorit)
         linearLayout = findViewById(R.id.linearLayoutRideOverView);
 
 
@@ -86,19 +85,24 @@ public class RideOverview extends AppCompatActivity implements RecyclerItemTouch
             @Override
             public void onClick(View view, int position) {
                 Ride ride = rideList.get(position);
-                Toast.makeText(getApplicationContext(), ride.getName() + " is selected!", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getApplicationContext(), ride.getName() + " is selected!", Toast.LENGTH_SHORT).show();
+                List<Coordinate>c = ride.getLocationPoints();
+
+                Intent rideDetail = new Intent(RideOverview.this, RideDetail.class);
+                rideDetail.putExtra("ride",ride);
+                startActivity(rideDetail);
             }
 
             @Override
             public void onLongClick(View view, int position) {
-                Ride ride = rideList.get(position);
-                Toast.makeText(getApplicationContext(), ride.getName() + " is selected!", Toast.LENGTH_SHORT).show();
+//                Ride ride = rideList.get(position);
+//                Toast.makeText(getApplicationContext(), ride.getName() + " is selected!", Toast.LENGTH_SHORT).show();
             }
         }));
 
     }
 
-    /** obslouzi gesto
+    /** implementace rozhrani z RecyclerTouchHelperu
      * callback when recycler view is swiped
      * item will be removed on swiped
      * undo option will be provided in snackbar to restore the item
@@ -133,3 +137,4 @@ public class RideOverview extends AppCompatActivity implements RecyclerItemTouch
         }
     }
 }
+

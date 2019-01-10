@@ -1,31 +1,33 @@
 package cz.uhk.fim.brahavl1.smartmeasurment;
 
-public class Coordinate {
+import java.io.Serializable;
 
-    private double logntitude;
-    private double lattitude;
+public class Coordinate implements Serializable {
+
+    private double longtitude;
+    private double latitude;
 
     public Coordinate() {
     }
 
-    public Coordinate(double logntitude, double lattitude) {
-        this.logntitude = logntitude;
-        this.lattitude = lattitude;
+    public Coordinate(double longtitude, double latitude) {
+        this.longtitude = longtitude;
+        this.latitude = latitude;
     }
 
-    public double getLogntitude() {
-        return logntitude;
+    public double getLongtitude() {
+        return longtitude;
     }
 
-    public void setLogntitude(double logntitude) {
-        this.logntitude = logntitude;
+    public void setLongtitude(double longtitude) {
+        this.longtitude = longtitude;
     }
 
-    public double getLattitude() {
-        return lattitude;
+    public double getLatitude() {
+        return latitude;
     }
 
-    public void setLattitude(double lattitude) {
-        this.lattitude = lattitude;
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
     }
 }

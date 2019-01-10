@@ -12,7 +12,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class Ride {
+public class Ride implements Serializable{
 
     private String name;
     private Date date;

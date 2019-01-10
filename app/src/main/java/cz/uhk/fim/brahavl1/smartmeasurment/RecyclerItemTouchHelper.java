@@ -17,7 +17,7 @@ public class RecyclerItemTouchHelper extends ItemTouchHelper.SimpleCallback {
     }
 
     @Override
-    public boolean onMove( RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+    public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder,@NonNull RecyclerView.ViewHolder target) {
         return true;
     }
 
@@ -31,7 +31,7 @@ public class RecyclerItemTouchHelper extends ItemTouchHelper.SimpleCallback {
     }
 
     @Override
-    public void onChildDrawOver(Canvas c,  RecyclerView recyclerView,
+    public void onChildDrawOver(@NonNull Canvas c, @NonNull RecyclerView recyclerView,
                                 RecyclerView.ViewHolder viewHolder, float dX, float dY,
                                 int actionState, boolean isCurrentlyActive) {
         final View foregroundView = ((RideListAdapter.RideListViewHolder) viewHolder).viewForeground;
@@ -40,14 +40,14 @@ public class RecyclerItemTouchHelper extends ItemTouchHelper.SimpleCallback {
     }
 
     @Override
-    public void clearView( RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+    public void clearView(@NonNull RecyclerView recyclerView,@NonNull RecyclerView.ViewHolder viewHolder) {
         final View foregroundView = ((RideListAdapter.RideListViewHolder) viewHolder).viewForeground;
         getDefaultUIUtil().clearView(foregroundView);
     }
 
     @Override //tohle obsluhuje gesto posouvani
-    public void onChildDraw(Canvas c,RecyclerView recyclerView,
-                             RecyclerView.ViewHolder viewHolder, float dX, float dY,
+    public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView,
+                            @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY,
                             int actionState, boolean isCurrentlyActive) {
         final View foregroundView = ((RideListAdapter.RideListViewHolder) viewHolder).viewForeground;
 
@@ -57,7 +57,7 @@ public class RecyclerItemTouchHelper extends ItemTouchHelper.SimpleCallback {
     }
 
     @Override //pokud se odswipnulo, tak to zavola metodu implentovanou metodu z rozhrani
-    public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+    public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
         listener.onSwiped(viewHolder, direction, viewHolder.getAdapterPosition());
     }
 
