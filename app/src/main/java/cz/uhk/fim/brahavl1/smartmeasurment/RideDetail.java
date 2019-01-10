@@ -11,6 +11,11 @@ import com.here.android.mpa.common.OnEngineInitListener;
 import com.here.android.mpa.mapping.Map;
 import com.here.android.mpa.mapping.MapFragment;
 import com.here.android.mpa.mapping.MapPolyline;
+import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.series.DataPoint;
+import com.jjoe64.graphview.series.LineGraphSeries;
+
+import org.apache.commons.math3.stat.StatUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,12 +25,18 @@ public class RideDetail extends AppCompatActivity {
     private Map map;
     private List<GeoCoordinate> locationPoints = new ArrayList<>();
 
+    private GraphView graph;
+    private Ride ride;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ride_detail);
+        graph = findViewById(R.id.graph_detail);
 
-        Ride ride = (Ride) getIntent().getExtras().get("ride");
+        ride = (Ride) getIntent().getExtras().get("ride");
+
+
         try{
             if (ride.getLocationPoints() != null){
                 for (Coordinate coordinate : ride.getLocationPoints()){
@@ -69,6 +80,34 @@ public class RideDetail extends AppCompatActivity {
             }
         });
 
+        calculateAverageAndPlotGraph();
+    }
+
+    private void calculateAverageAndPlotGraph() {
+        graph.removeAllSeries();
+
+        //VYPOCET KLOUZAVEHO PRUMERU A JEHO VLOZENI DO GRAFU
+        int length = ride.getAccelerometerData().size();
+        double[] dataForMovingAverage = new double[length]; //kvuli commons math, ktery berou jenom pole double
+        DataPoint[] dataPoints = new DataPoint[length]; //pole bodu pro graf
+        int i = 0;
+        for (float z : ride.getAccelerometerData()) {
+            //do tohodle se pridavaj hodnoty z akcelerometru pro osu Z
+            dataForMovingAverage[i] = z;
+
+            //budeme počítat prumer pro poslednich 10 hodnot z dat a ty budeme vykreslovat
+            if (i < 10) {
+                double nextYValue = StatUtils.mean(dataForMovingAverage);
+                dataPoints[i] = new DataPoint(i, nextYValue);
+            } else {
+                double nextYValue = StatUtils.mean(dataForMovingAverage, i - 10, 10);
+                dataPoints[i] = new DataPoint(i, nextYValue);
+            }
+            i++;
+        }
+        //přidání dat do grafu
+        LineGraphSeries<DataPoint> series = new LineGraphSeries<>(dataPoints);
+        graph.addSeries(series);
 
     }
 }
