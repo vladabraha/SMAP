@@ -134,6 +134,7 @@ public class PositionGoogle extends AppCompatActivity implements SensorEventList
         Intent intent = new Intent(this, ForegroundService.class);
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
         ContextCompat.startForegroundService(this, intent);
+        createLocationRequestForForegroundService();
 
 //        btnStartForegroundService.setOnClickListener(view -> {
 //            createLocationRequestForForegroundService();
@@ -346,6 +347,7 @@ public class PositionGoogle extends AppCompatActivity implements SensorEventList
     private void stopLocationUpdates() {
         if (mFusedLocationClient != null)
             mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+        mSensorManager.unregisterListener(this);
     }
 
 

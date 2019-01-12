@@ -21,6 +21,7 @@ import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
+import android.util.Log;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -90,10 +91,13 @@ public class ForegroundService extends Service implements SensorEventListener {
         mLocationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
+
                 if (locationResult == null) {
+                    zPoints.clear();
                     return;
                 }
                 for (Location location : locationResult.getLocations()) {
+//                    Log.d("hoo", "poloha" + String.valueOf(location.getLatitude()));
                     // Update UI with location data
                     float sum = 0;
                     int count = 0;
@@ -137,6 +141,8 @@ public class ForegroundService extends Service implements SensorEventListener {
         linear_acceleration[2] = getElement(pole, 2) - gravity[2];
 
         zPoints.add(linear_acceleration[2]);
+
+//        Log.d("hoo", "akcelerace" + String.valueOf(linear_acceleration[2]));
     }
 
     @Override
