@@ -25,9 +25,14 @@ public class RideDetail extends AppCompatActivity {
 
     private Map map;
     private List<GeoCoordinate> locationPoints = new ArrayList<>();
+    private List<Float> accelerometerPoints = new ArrayList<>();
+    private List<Coordinate> rideCoordinates = new ArrayList<>();
 
     private GraphView graph;
     private Ride ride;
+
+    //rozdíl mezi maximální a minimální hodnotou
+    private double difference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,21 +41,25 @@ public class RideDetail extends AppCompatActivity {
         graph = findViewById(R.id.graph_detail);
 
         ride = (Ride) getIntent().getExtras().get("ride");
+        double MAX = (double) getIntent().getExtras().get("max");
+        double MIN = (double) getIntent().getExtras().get("min");
+        difference = MAX - MIN;
 
-        List<Coordinate> rideCoordinates = new ArrayList<>();
+
         rideCoordinates = ride.getLocationPoints();
+        accelerometerPoints = ride.getAccelerometerData();
 
-        try{
-            if (ride.getLocationPoints() != null){
-                for (Coordinate coordinate : rideCoordinates){
+        try {
+            if (ride.getLocationPoints() != null) {
+                for (Coordinate coordinate : rideCoordinates) {
 //                    Log.d("hoo","getLatitude je " + coordinate.getLatitude());
 //                    Log.d("hoo","getLongitude je " +  coordinate.getLongtitude());
                     locationPoints.add(new GeoCoordinate(coordinate.getLatitude(), coordinate.getLongtitude(), 10));
                 }
 
             }
-        }catch (NullPointerException e){
-            Toast.makeText(this,"tento zaznam nema data o jizde", Toast.LENGTH_LONG).show();
+        } catch (NullPointerException e) {
+            Toast.makeText(this, "tento zaznam nema data o jizde", Toast.LENGTH_LONG).show();
         }
 
 
@@ -67,17 +76,30 @@ public class RideDetail extends AppCompatActivity {
                     if (locationPoints.size() > 2) {
 
                         int halfListPosition = locationPoints.size() / 2;
-                        map.setCenter(new GeoCoordinate(locationPoints.get(halfListPosition).getLatitude(),
-                                locationPoints.get(halfListPosition).getLongitude()), Map.Animation.NONE);
-//                        Log.d("hoo","getLatitude je " + locationPoints.get(0).getLatitude());
-//                        Log.d("hoo","getLongitude je " +  locationPoints.get(0).getLongitude());
+                        map.setCenter(new GeoCoordinate(locationPoints.get(halfListPosition).getLatitude(), locationPoints.get(halfListPosition).getLongitude()), Map.Animation.NONE);
                         map.setZoomLevel((map.getMaxZoomLevel() + map.getMinZoomLevel()) / 2);
 
-                        GeoPolyline polyline = new GeoPolyline(locationPoints);
-                        MapPolyline mapPolyline = new MapPolyline(polyline);
-                        mapPolyline.setLineColor(Color.RED);
-                        mapPolyline.setLineWidth(12);
-                        map.addMapObject(mapPolyline);
+//                    GeoPolyline polyline = new GeoPolyline(locationPoints);
+//                    MapPolyline mapPolyline = new MapPolyline(polyline);
+//                    mapPolyline.setLineColor(Color.RED);
+//                    mapPolyline.setLineWidth(12);
+//                    map.addMapObject(mapPolyline);
+
+                        //
+                        for (int i = 1; i < locationPoints.size() - 1; i++) {
+                            List<GeoCoordinate> positionPoints = new ArrayList<>();
+                            positionPoints.add(new GeoCoordinate(rideCoordinates.get(i - 1).getLatitude(), rideCoordinates.get(i - 1).getLongtitude(), 10));
+                            positionPoints.add(new GeoCoordinate(rideCoordinates.get(i).getLatitude(), rideCoordinates.get(i).getLongtitude(), 10));
+
+
+                            GeoPolyline polyline = new GeoPolyline(positionPoints);
+                            MapPolyline mapPolyline = new MapPolyline(polyline);
+                            mapPolyline.setLineColor(interpolateColor(Color.GREEN, Color.RED, accelerometerPoints.get(i) / (float) difference));
+
+
+                            mapPolyline.setLineWidth(12);
+                            map.addMapObject(mapPolyline);
+                        }
                     }
                 } else {
                     System.out.println("ERROR: Cannot initialize Map Fragment");
@@ -114,5 +136,28 @@ public class RideDetail extends AppCompatActivity {
         LineGraphSeries<DataPoint> series = new LineGraphSeries<>(dataPoints);
         graph.addSeries(series);
 
+    }
+
+    /**
+     * Interpoluje barvu mezi zadanými 2 barvami a procentem, mezi kterým se to má pohybovat
+     *
+     * @param a          zacatek rozsahu
+     * @param b          konec rozsahu
+     * @param proportion procento
+     * @return vrátí barvu se zadaným procentem
+     */
+    private int interpolateColor(int a, int b, float proportion) {
+        float[] hsva = new float[3];
+        float[] hsvb = new float[3];
+        Color.colorToHSV(a, hsva);
+        Color.colorToHSV(b, hsvb);
+        for (int i = 0; i < 3; i++) {
+            hsvb[i] = interpolate(hsva[i], hsvb[i], proportion);
+        }
+        return Color.HSVToColor(hsvb);
+    }
+
+    private float interpolate(float a, float b, float proportion) {
+        return (a + ((b - a) * proportion));
     }
 }

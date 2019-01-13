@@ -2,6 +2,7 @@ package cz.uhk.fim.brahavl1.smartmeasurment;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -9,6 +10,7 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 
@@ -17,6 +19,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import org.apache.commons.math3.stat.StatUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +36,9 @@ public class RideOverview extends AppCompatActivity implements RecyclerItemTouch
     private List<Ride> rideList = new ArrayList<>();
 
     private LinearLayout linearLayout;
+
+    boolean finishedCalculation = false;
+    List<Double> minMaxOfAllRide;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +78,8 @@ public class RideOverview extends AppCompatActivity implements RecyclerItemTouch
                     // specify an adapter (see also next example)
                     mAdapter = new RideListAdapter(rideList);
                     recyclerView.setAdapter(mAdapter);
+                    minMaxOfAllRide = new ComputeDataForHeatMap().doInBackground(rideList);
+//                    Log.d("hoo", "vysledek je " + String.valueOf(minMaxOfAllRide.get(0)) + " " + String.valueOf(minMaxOfAllRide.get(1)));
                 }
             }
 
@@ -86,10 +95,11 @@ public class RideOverview extends AppCompatActivity implements RecyclerItemTouch
             public void onClick(View view, int position) {
                 Ride ride = rideList.get(position);
 //                Toast.makeText(getApplicationContext(), ride.getName() + " is selected!", Toast.LENGTH_SHORT).show();
-                List<Coordinate>c = ride.getLocationPoints();
 
                 Intent rideDetail = new Intent(RideOverview.this, RideDetail.class);
                 rideDetail.putExtra("ride",ride);
+                rideDetail.putExtra("min",minMaxOfAllRide.get(0));
+                rideDetail.putExtra("max",minMaxOfAllRide.get(1));
                 startActivity(rideDetail);
             }
 
@@ -136,5 +146,53 @@ public class RideOverview extends AppCompatActivity implements RecyclerItemTouch
             databaseConnector.removeRide(deletedItem);
         }
     }
+
+    //TODO HLEDANI MAXIMA A MINIMA V PŘÍPADĚ VELKÉHO MNOŽSTVÍ DAT OPTIMALIZOVAT!!  A NEFUNGUJE
+    //co ma prijit, progress a co se ma vratit z AsyncTasku
+    private class ComputeDataForHeatMap extends AsyncTask<List<Ride>, Integer, List<Double>> {
+
+        //hledame 90 percentil,
+        @Override
+        protected List<Double> doInBackground(List<Ride>... lists) {
+            int accelerometrDataSize = 0;
+            for (Ride ride : rideList){
+                accelerometrDataSize += ride.getAccelerometerData().size();
+            }
+            double[] points = new double[accelerometrDataSize];
+            int increment = 0;
+            for (Ride ride: rideList){
+                for (Float point : ride.getAccelerometerData()){
+                    points[increment] = (Double.valueOf(point));
+                    increment++;
+                    float progress = (increment / accelerometrDataSize) * 100;
+                    Integer i = new Integer(Math.round(progress));
+                    publishProgress(i);
+                }
+            }
+
+            double maximum = StatUtils.max(points);
+            double minimun = StatUtils.min(points);
+            List<Double> list = new ArrayList<>();
+            list.add(minimun);
+            list.add(maximum);
+
+            return list;
+        }
+
+        protected void onProgressUpdate(Integer... progress) {
+
+//            Log.d("hoo", "tak už je hotovo " + String.valueOf(progress[0]));
+        }
+
+        protected void onPostExecute(List<Double> list) {
+            finishedCalculation = true;
+            Log.d("hoo", "tak už");
+        }
+
+
+
+    }
+
+
 }
 
