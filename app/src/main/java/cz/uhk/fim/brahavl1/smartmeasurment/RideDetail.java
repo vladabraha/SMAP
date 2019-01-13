@@ -3,6 +3,7 @@ package cz.uhk.fim.brahavl1.smartmeasurment;
 import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.here.android.mpa.common.GeoCoordinate;
@@ -36,14 +37,17 @@ public class RideDetail extends AppCompatActivity {
 
         ride = (Ride) getIntent().getExtras().get("ride");
 
+        List<Coordinate> rideCoordinates = new ArrayList<>();
+        rideCoordinates = ride.getLocationPoints();
 
         try{
             if (ride.getLocationPoints() != null){
-                for (Coordinate coordinate : ride.getLocationPoints()){
+                for (Coordinate coordinate : rideCoordinates){
 //                    Log.d("hoo","getLatitude je " + coordinate.getLatitude());
 //                    Log.d("hoo","getLongitude je " +  coordinate.getLongtitude());
                     locationPoints.add(new GeoCoordinate(coordinate.getLatitude(), coordinate.getLongtitude(), 10));
                 }
+
             }
         }catch (NullPointerException e){
             Toast.makeText(this,"tento zaznam nema data o jizde", Toast.LENGTH_LONG).show();
@@ -62,8 +66,9 @@ public class RideDetail extends AppCompatActivity {
 
                     if (locationPoints.size() > 2) {
 
-                        map.setCenter(new GeoCoordinate(locationPoints.get(0).getLatitude(),
-                                locationPoints.get(0).getLongitude()), Map.Animation.NONE);
+                        int halfListPosition = locationPoints.size() / 2;
+                        map.setCenter(new GeoCoordinate(locationPoints.get(halfListPosition).getLatitude(),
+                                locationPoints.get(halfListPosition).getLongitude()), Map.Animation.NONE);
 //                        Log.d("hoo","getLatitude je " + locationPoints.get(0).getLatitude());
 //                        Log.d("hoo","getLongitude je " +  locationPoints.get(0).getLongitude());
                         map.setZoomLevel((map.getMaxZoomLevel() + map.getMinZoomLevel()) / 2);

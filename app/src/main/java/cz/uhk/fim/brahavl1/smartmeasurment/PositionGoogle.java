@@ -46,7 +46,7 @@ import com.here.android.mpa.mapping.MapPolyline;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PositionGoogle extends AppCompatActivity implements SensorEventListener, ForegroundService.Callbacks, SaveDialogFragment.NoticeDialogListener {
+public class PositionGoogle extends AppCompatActivity implements ForegroundService.Callbacks, SaveDialogFragment.NoticeDialogListener {
 
     protected static final int REQUEST_CHECK_SETTINGS = 0x1;
 
@@ -78,8 +78,6 @@ public class PositionGoogle extends AppCompatActivity implements SensorEventList
 
         txtLocation = findViewById(R.id.txtLocation);
         Button btnStartLocationUpdate = findViewById(R.id.btnStartLocationUpdates);
-//        Button btnStopLocationUpdates = findViewById(R.id.btnStopLocationUpdates);
-//        Button btnStartForegroundService = findViewById(R.id.btnForegroundService);
 
         //MAPA
         //---------------------------------------------------------------------------------------------------
@@ -108,7 +106,8 @@ public class PositionGoogle extends AppCompatActivity implements SensorEventList
                 DialogFragment dialog = new SaveDialogFragment();
                 dialog.show(getSupportFragmentManager(), "SaveDialogFragment");
             }else{
-                createLocationRequest();
+                createLocationRequestForForegroundService(); //spusti location update ve foreground service
+//                createLocationRequest();
                 btnStartLocationUpdate.setText("save the ride");
             }
 
@@ -123,9 +122,9 @@ public class PositionGoogle extends AppCompatActivity implements SensorEventList
         //AKCELEROMETR
         //---------------------------------------------------------------------------------------------------
         //inicializace akcelerometru
-        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        accelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        mSensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+//        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+//        accelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+//        mSensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
 
 
         //FOREGROUND SEERVICE
@@ -134,7 +133,7 @@ public class PositionGoogle extends AppCompatActivity implements SensorEventList
         Intent intent = new Intent(this, ForegroundService.class);
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
         ContextCompat.startForegroundService(this, intent);
-        createLocationRequestForForegroundService();
+
 
 //        btnStartForegroundService.setOnClickListener(view -> {
 //            createLocationRequestForForegroundService();
@@ -143,47 +142,47 @@ public class PositionGoogle extends AppCompatActivity implements SensorEventList
         //MAPA
         //---------------------------------------------------------------------------------------------------
 //        //CallBack - sem prijde zpatko poloha, kdyz se zmeni, takovej listener
-        mLocationCallback = new LocationCallback() {
-            @Override
-            public void onLocationResult(LocationResult locationResult) {
-                if (locationResult == null) {
-                    zPoints.clear();
-                    return;
-                }
-                for (Location location : locationResult.getLocations()) {
-                    // Update UI with location data
-                    if (map != null) {
-                        //projdu vsechny kladny hodnoty (protoze je to jako sinusoida a dalo by to jinak 0), ktere se ulozili do zpoints a vezmu jejich prumer
-                        float sum = 0;
-                        int count = 0;
-                        for (Float point : zPoints) {
-                            if (point > 0) {
-                                sum += point;
-                                count++;
-                            }
-                        }
-                        if (count == 0) {
-                            zPoints.clear();
-                            return;
-                        }
-                        zPointsAverage.add(sum / count); //tady uložím průměr za daný rámec do zPointsu
-                        zPoints.clear();
-
-                        txtLocation.setText(String.valueOf(location.getLongitude()));
-                        locationPoints.add(new GeoCoordinate(location.getLatitude(), location.getLongitude(), 10));
-                        if (locationPoints.size() > 2) {
-                            GeoPolyline polyline = new GeoPolyline(locationPoints);
-                            MapPolyline mapPolyline = new MapPolyline(polyline);
-                            mapPolyline.setLineColor(Color.RED);
-                            mapPolyline.setLineWidth(12);
-                            map.addMapObject(mapPolyline);
-                        }
-                    }
-                }
-            }
-
-        };
-
+//        mLocationCallback = new LocationCallback() {
+//            @Override
+//            public void onLocationResult(LocationResult locationResult) {
+//                if (locationResult == null) {
+//                    zPoints.clear();
+//                    return;
+//                }
+//                for (Location location : locationResult.getLocations()) {
+//                    // Update UI with location data
+//                    if (map != null) {
+//                        //projdu vsechny kladny hodnoty (protoze je to jako sinusoida a dalo by to jinak 0), ktere se ulozili do zpoints a vezmu jejich prumer
+//                        float sum = 0;
+//                        int count = 0;
+//                        for (Float point : zPoints) {
+//                            if (point > 0) {
+//                                sum += point;
+//                                count++;
+//                            }
+//                        }
+//                        if (count == 0) {
+//                            zPoints.clear();
+//                            return;
+//                        }
+//                        zPointsAverage.add(sum / count); //tady uložím průměr za daný rámec do zPointsu
+//                        zPoints.clear();
+//
+//                        txtLocation.setText(String.valueOf(location.getLongitude()));
+//                        locationPoints.add(new GeoCoordinate(location.getLatitude(), location.getLongitude(), 10));
+//                        if (locationPoints.size() > 2) {
+//                            GeoPolyline polyline = new GeoPolyline(locationPoints);
+//                            MapPolyline mapPolyline = new MapPolyline(polyline);
+//                            mapPolyline.setLineColor(Color.RED);
+//                            mapPolyline.setLineWidth(12);
+//                            map.addMapObject(mapPolyline);
+//                        }
+//                    }
+//                }
+//            }
+//
+//        };
+//
         //provede dotaz na opravenni a pripadne se zepta o povoleni
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(PositionGoogle.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
@@ -206,24 +205,24 @@ public class PositionGoogle extends AppCompatActivity implements SensorEventList
                 }
             }
         });
-
-    }
+//
+//    }
 
     //------------------------------------------------------------------------
     // AKCELEROMETR
-    @Override
-    public void onSensorChanged(SensorEvent sensorEvent) {
-        float[] pole = sensorEvent.values.clone();
-        //HighPass filter by Google: (v podstatě se vezme zrychlení 9,8 a to se od toho odečte
-//        gravity[0] = alpha * gravity[0] + (1 - alpha) * getElement(pole, 0);
-//        gravity[1] = alpha * gravity[1] + (1 - alpha) * getElement(pole, 1);
-        gravity[2] = alpha * gravity[2] + (1 - alpha) * getElement(pole, 2);
-
-//        linear_acceleration[0] = getElement(pole, 0) - gravity[0];
-//        linear_acceleration[1] = getElement(pole, 1) - gravity[1];
-        linear_acceleration[2] = getElement(pole, 2) - gravity[2];
-
-        zPoints.add(linear_acceleration[2]);
+//    @Override
+//    public void onSensorChanged(SensorEvent sensorEvent) {
+//        float[] pole = sensorEvent.values.clone();
+//        //HighPass filter by Google: (v podstatě se vezme zrychlení 9,8 a to se od toho odečte
+////        gravity[0] = alpha * gravity[0] + (1 - alpha) * getElement(pole, 0);
+////        gravity[1] = alpha * gravity[1] + (1 - alpha) * getElement(pole, 1);
+//        gravity[2] = alpha * gravity[2] + (1 - alpha) * getElement(pole, 2);
+//
+////        linear_acceleration[0] = getElement(pole, 0) - gravity[0];
+////        linear_acceleration[1] = getElement(pole, 1) - gravity[1];
+//        linear_acceleration[2] = getElement(pole, 2) - gravity[2];
+//
+//        zPoints.add(linear_acceleration[2]);
     }
 
 
@@ -243,7 +242,7 @@ public class PositionGoogle extends AppCompatActivity implements SensorEventList
             // All location settings are satisfied. The client can initialize
             // location requests here.
             // Tady se to rozjede
-            mService.createLocationRequest();
+             mService.createLocationRequest();
         });
 
         //tady se to zeptá na oprávnění, pokud nejsou k dispozici
@@ -270,54 +269,54 @@ public class PositionGoogle extends AppCompatActivity implements SensorEventList
     /**
      * nastaveni dotazu na polohu a spusteni updatů
      */
-    protected void createLocationRequest() {
-        //vytvoří se požadavek na polohu
-        mLocationRequest.setInterval(500);
-        mLocationRequest.setFastestInterval(1000);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
-        //tady se přihodí co se chce za pravnění
-        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
-                .addLocationRequest(mLocationRequest);
-
-        //kontrola zda jsou opravnění nastavena
-        SettingsClient client = LocationServices.getSettingsClient(this);
-        Task<LocationSettingsResponse> task = client.checkLocationSettings(builder.build());
-
-        //dotaz na oprávnění
-        task.addOnSuccessListener(this, locationSettingsResponse -> {
-            // All location settings are satisfied. The client can initialize
-            // location requests here.
-            // Tady se to rozjede
-            startLocationUpdates();
-        });
-
-        //tady se to zeptá na oprávnění, pokud nejsou k dispozici
-        task.addOnFailureListener(this, new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                if (e instanceof ResolvableApiException) {
-                    // Location settings are not satisfied, but this can be fixed
-                    // by showing the user a dialog.
-                    try {
-                        // Show the dialog by calling startResolutionForResult(),
-                        // and check the result in onActivityResult().
-                        ResolvableApiException resolvable = (ResolvableApiException) e;
-                        resolvable.startResolutionForResult(PositionGoogle.this,
-                                REQUEST_CHECK_SETTINGS);
-                    } catch (IntentSender.SendIntentException sendEx) {
-                        // Ignore the error.
-                    }
-                }
-            }
-        });
-    }
+//    protected void createLocationRequest() {
+//        //vytvoří se požadavek na polohu
+//        mLocationRequest.setInterval(500);
+//        mLocationRequest.setFastestInterval(1000);
+//        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+//
+//        //tady se přihodí co se chce za pravnění
+//        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
+//                .addLocationRequest(mLocationRequest);
+//
+//        //kontrola zda jsou opravnění nastavena
+//        SettingsClient client = LocationServices.getSettingsClient(this);
+//        Task<LocationSettingsResponse> task = client.checkLocationSettings(builder.build());
+//
+//        //dotaz na oprávnění
+//        task.addOnSuccessListener(this, locationSettingsResponse -> {
+//            // All location settings are satisfied. The client can initialize
+//            // location requests here.
+//            // Tady se to rozjede
+//            startLocationUpdates();
+//        });
+//
+//        //tady se to zeptá na oprávnění, pokud nejsou k dispozici
+//        task.addOnFailureListener(this, new OnFailureListener() {
+//            @Override
+//            public void onFailure(@NonNull Exception e) {
+//                if (e instanceof ResolvableApiException) {
+//                    // Location settings are not satisfied, but this can be fixed
+//                    // by showing the user a dialog.
+//                    try {
+//                        // Show the dialog by calling startResolutionForResult(),
+//                        // and check the result in onActivityResult().
+//                        ResolvableApiException resolvable = (ResolvableApiException) e;
+//                        resolvable.startResolutionForResult(PositionGoogle.this,
+//                                REQUEST_CHECK_SETTINGS);
+//                    } catch (IntentSender.SendIntentException sendEx) {
+//                        // Ignore the error.
+//                    }
+//                }
+//            }
+//        });
+//    }
 
     @Override
     protected void onResume() {
         super.onResume();
-        startLocationUpdates();
-        mSensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+//        startLocationUpdates();
+//        mSensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     /**
@@ -325,15 +324,15 @@ public class PositionGoogle extends AppCompatActivity implements SensorEventList
      */
     private void startLocationUpdates() {
         //tohle se zepta na opravnění k pozici, pokud neni
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(PositionGoogle.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-        } else {
-            if (mFusedLocationClient != null && mLocationCallback != null) {
-                mFusedLocationClient.requestLocationUpdates(mLocationRequest,
-                        mLocationCallback,
-                        null);
-            }
-        }
+//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+//            ActivityCompat.requestPermissions(PositionGoogle.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+//        } else {
+//            if (mFusedLocationClient != null && mLocationCallback != null) {
+//                mFusedLocationClient.requestLocationUpdates(mLocationRequest,
+//                        mLocationCallback,
+//                        null);
+//            }
+//        }
     }
 
 
@@ -341,13 +340,13 @@ public class PositionGoogle extends AppCompatActivity implements SensorEventList
     protected void onPause() {
         super.onPause();
 //        stopLocationUpdates();
-        mSensorManager.unregisterListener(this);
+//        mSensorManager.unregisterListener(this);
     }
 
     private void stopLocationUpdates() {
-        if (mFusedLocationClient != null)
-            mFusedLocationClient.removeLocationUpdates(mLocationCallback);
-        mSensorManager.unregisterListener(this);
+//        if (mFusedLocationClient != null)
+//            mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+//        mSensorManager.unregisterListener(this);
     }
 
 
@@ -355,7 +354,7 @@ public class PositionGoogle extends AppCompatActivity implements SensorEventList
     protected void onStop() {
         super.onStop();
 //        unbindService(mConnection);
-        mBound = false;
+//        mBound = false;
     }
 
     /**
@@ -391,7 +390,7 @@ public class PositionGoogle extends AppCompatActivity implements SensorEventList
 //            locationPoints.add(new GeoCoordinate(location.getLatitude(), location.getLongitude(), 10));
             if (points.size() > 2) {
                 locationPoints.addAll(points);
-                this.zPointsAverage.addAll(zPointsAverage);
+                this.zPointsAverage = zPointsAverage;
                 GeoPolyline polyline = new GeoPolyline(points);
                 MapPolyline mapPolyline = new MapPolyline(polyline);
                 mapPolyline.setLineColor(Color.RED);
@@ -400,6 +399,7 @@ public class PositionGoogle extends AppCompatActivity implements SensorEventList
             }
         }
     }
+
 
     /**
      * při stisknuti tlačítka zpět se zastavi služba na popředí
@@ -434,12 +434,13 @@ public class PositionGoogle extends AppCompatActivity implements SensorEventList
         DatabaseConnector databaseConnector = new DatabaseConnector();
         databaseConnector.saveRide(ride);
         Toast.makeText(this, "succesfuly saved into database", Toast.LENGTH_LONG).show();
+        mService.stopService(); //Nutne k ukonceni foreground service!
         finish();
     }
 
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int i) {
-    }
+//    @Override
+//    public void onAccuracyChanged(Sensor sensor, int i) {
+//    }
 
     /**
      * vrátí prvek z pole
@@ -447,8 +448,8 @@ public class PositionGoogle extends AppCompatActivity implements SensorEventList
      * @param index        pozice ze které chceme získat prvek
      * @return vrátí prvek na daném místě
      */
-    public float getElement(float[] arrayOfFloat, int index) {
-
-        return arrayOfFloat[index];
-    }
+//    public float getElement(float[] arrayOfFloat, int index) {
+//
+//        return arrayOfFloat[index];
+//    }
 }

@@ -7,7 +7,6 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -97,7 +96,6 @@ public class ForegroundService extends Service implements SensorEventListener {
                     return;
                 }
                 for (Location location : locationResult.getLocations()) {
-//                    Log.d("hoo", "poloha" + String.valueOf(location.getLatitude()));
                     // Update UI with location data
                     float sum = 0;
                     int count = 0;
@@ -141,8 +139,6 @@ public class ForegroundService extends Service implements SensorEventListener {
         linear_acceleration[2] = getElement(pole, 2) - gravity[2];
 
         zPoints.add(linear_acceleration[2]);
-
-//        Log.d("hoo", "akcelerace" + String.valueOf(linear_acceleration[2]));
     }
 
     @Override
@@ -175,6 +171,7 @@ public class ForegroundService extends Service implements SensorEventListener {
     public void onDestroy() {
         // The service is no longer used and is being destroyed
         stopLocationUpdates();
+        mSensorManager.unregisterListener(this);
     }
 
     public void createLocationRequest() {
@@ -286,6 +283,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 
     /**
      * vrátí prvek z pole
+     *
      * @param arrayOfFloat pole ze kterho chceme získat data
      * @param index        pozice ze které chceme získat prvek
      * @return vrátí prvek na daném místě
