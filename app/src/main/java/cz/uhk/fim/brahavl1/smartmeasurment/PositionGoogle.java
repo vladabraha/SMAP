@@ -50,13 +50,7 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
 
     protected static final int REQUEST_CHECK_SETTINGS = 0x1;
 
-    private SensorManager mSensorManager;
-    private Sensor accelerometer;
-    private final float alpha = 0.8f;
-    private float gravity[] = new float[3];
-    private float linear_acceleration[] = new float[3];
     //Array bodu, ktere se budou vykreslovat na grafu
-    private List<Float> zPoints = new ArrayList<>();
     private List<Float> zPointsAverage = new ArrayList<>(); //v tomhle poli budou průměry k jednotlivým rámcům z gps
 
     private TextView txtLocation;
@@ -100,6 +94,8 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
             }
         });
 
+        createLocationRequest();
+
         btnStartLocationUpdate.setOnClickListener(view -> {
             //Pro přepínání funkce tlačítka - jinak by musely bejt 2
             if (btnStartLocationUpdate.getText() == "save the ride"){
@@ -113,20 +109,6 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
 
         });
 
-//        btnStopLocationUpdates.setOnClickListener(view -> {
-//            // Create an instance of the dialog fragment and show it
-//            DialogFragment dialog = new SaveDialogFragment();
-//            dialog.show(getSupportFragmentManager(), "SaveDialogFragment");
-//        });
-
-        //AKCELEROMETR
-        //---------------------------------------------------------------------------------------------------
-        //inicializace akcelerometru
-//        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-//        accelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-//        mSensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
-
-
         //FOREGROUND SEERVICE
         //---------------------------------------------------------------------------------------------------
         //spustí foreground service
@@ -134,55 +116,6 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
         ContextCompat.startForegroundService(this, intent);
 
-
-//        btnStartForegroundService.setOnClickListener(view -> {
-//            createLocationRequestForForegroundService();
-//        });
-
-        //MAPA
-        //---------------------------------------------------------------------------------------------------
-//        //CallBack - sem prijde zpatko poloha, kdyz se zmeni, takovej listener
-//        mLocationCallback = new LocationCallback() {
-//            @Override
-//            public void onLocationResult(LocationResult locationResult) {
-//                if (locationResult == null) {
-//                    zPoints.clear();
-//                    return;
-//                }
-//                for (Location location : locationResult.getLocations()) {
-//                    // Update UI with location data
-//                    if (map != null) {
-//                        //projdu vsechny kladny hodnoty (protoze je to jako sinusoida a dalo by to jinak 0), ktere se ulozili do zpoints a vezmu jejich prumer
-//                        float sum = 0;
-//                        int count = 0;
-//                        for (Float point : zPoints) {
-//                            if (point > 0) {
-//                                sum += point;
-//                                count++;
-//                            }
-//                        }
-//                        if (count == 0) {
-//                            zPoints.clear();
-//                            return;
-//                        }
-//                        zPointsAverage.add(sum / count); //tady uložím průměr za daný rámec do zPointsu
-//                        zPoints.clear();
-//
-//                        txtLocation.setText(String.valueOf(location.getLongitude()));
-//                        locationPoints.add(new GeoCoordinate(location.getLatitude(), location.getLongitude(), 10));
-//                        if (locationPoints.size() > 2) {
-//                            GeoPolyline polyline = new GeoPolyline(locationPoints);
-//                            MapPolyline mapPolyline = new MapPolyline(polyline);
-//                            mapPolyline.setLineColor(Color.RED);
-//                            mapPolyline.setLineWidth(12);
-//                            map.addMapObject(mapPolyline);
-//                        }
-//                    }
-//                }
-//            }
-//
-//        };
-//
         //provede dotaz na opravenni a pripadne se zepta o povoleni
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(PositionGoogle.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
@@ -195,7 +128,6 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
             @Override
             public void onSuccess(Location location) {
                 // Got last known location. In some rare situations this can be null.
-
                 if (location != null && map != null) {
                     // Logic to handle location object
 //                    txtLocation.setText(String.valueOf(location.getLongitude()));
@@ -205,31 +137,13 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
                 }
             }
         });
-//
-//    }
-
-    //------------------------------------------------------------------------
-    // AKCELEROMETR
-//    @Override
-//    public void onSensorChanged(SensorEvent sensorEvent) {
-//        float[] pole = sensorEvent.values.clone();
-//        //HighPass filter by Google: (v podstatě se vezme zrychlení 9,8 a to se od toho odečte
-////        gravity[0] = alpha * gravity[0] + (1 - alpha) * getElement(pole, 0);
-////        gravity[1] = alpha * gravity[1] + (1 - alpha) * getElement(pole, 1);
-//        gravity[2] = alpha * gravity[2] + (1 - alpha) * getElement(pole, 2);
-//
-////        linear_acceleration[0] = getElement(pole, 0) - gravity[0];
-////        linear_acceleration[1] = getElement(pole, 1) - gravity[1];
-//        linear_acceleration[2] = getElement(pole, 2) - gravity[2];
-//
-//        zPoints.add(linear_acceleration[2]);
     }
 
 
     private void createLocationRequestForForegroundService() {
         //vytvoří se požadavek na polohu
-        mLocationRequest.setInterval(500);
-        mLocationRequest.setFastestInterval(1000);
+        mLocationRequest.setInterval(1000);
+        mLocationRequest.setFastestInterval(500);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
         //tady se přihodí co se chce za pravnění
@@ -267,50 +181,51 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
     }
 
     /**
-     * nastaveni dotazu na polohu a spusteni updatů
+     * dotaz na to, zda není získávání polohy v režimu úsporný režim (nebo vypnuto)
+     * pokud je, tak se zeptá na povolení o přepnutí na kombinovaný režim (gps + geolocation)
      */
-//    protected void createLocationRequest() {
-//        //vytvoří se požadavek na polohu
-//        mLocationRequest.setInterval(500);
-//        mLocationRequest.setFastestInterval(1000);
-//        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-//
-//        //tady se přihodí co se chce za pravnění
-//        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
-//                .addLocationRequest(mLocationRequest);
-//
-//        //kontrola zda jsou opravnění nastavena
-//        SettingsClient client = LocationServices.getSettingsClient(this);
-//        Task<LocationSettingsResponse> task = client.checkLocationSettings(builder.build());
-//
-//        //dotaz na oprávnění
-//        task.addOnSuccessListener(this, locationSettingsResponse -> {
-//            // All location settings are satisfied. The client can initialize
-//            // location requests here.
-//            // Tady se to rozjede
+    protected void createLocationRequest() {
+        //vytvoří se požadavek na polohu
+        mLocationRequest.setInterval(1000);
+        mLocationRequest.setFastestInterval(500);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        //tady se přihodí co se chce za pravnění
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
+                .addLocationRequest(mLocationRequest);
+
+        //kontrola zda jsou opravnění nastavena
+        SettingsClient client = LocationServices.getSettingsClient(this);
+        Task<LocationSettingsResponse> task = client.checkLocationSettings(builder.build());
+
+        //pokud bylo všem dotazům vyhověno, může se to rozjet
+        task.addOnSuccessListener(this, locationSettingsResponse -> {
+            // All location settings are satisfied. The client can initialize
+            // location requests here.
+            // Tady se to rozjede
 //            startLocationUpdates();
-//        });
-//
-//        //tady se to zeptá na oprávnění, pokud nejsou k dispozici
-//        task.addOnFailureListener(this, new OnFailureListener() {
-//            @Override
-//            public void onFailure(@NonNull Exception e) {
-//                if (e instanceof ResolvableApiException) {
-//                    // Location settings are not satisfied, but this can be fixed
-//                    // by showing the user a dialog.
-//                    try {
-//                        // Show the dialog by calling startResolutionForResult(),
-//                        // and check the result in onActivityResult().
-//                        ResolvableApiException resolvable = (ResolvableApiException) e;
-//                        resolvable.startResolutionForResult(PositionGoogle.this,
-//                                REQUEST_CHECK_SETTINGS);
-//                    } catch (IntentSender.SendIntentException sendEx) {
-//                        // Ignore the error.
-//                    }
-//                }
-//            }
-//        });
-//    }
+        });
+
+        //tady se to zeptá na oprávnění, pokud nejsou k dispozici
+        task.addOnFailureListener(this, new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                if (e instanceof ResolvableApiException) {
+                    // Location settings are not satisfied, but this can be fixed
+                    // by showing the user a dialog.
+                    try {
+                        // Show the dialog by calling startResolutionForResult(),
+                        // and check the result in onActivityResult().
+                        ResolvableApiException resolvable = (ResolvableApiException) e;
+                        resolvable.startResolutionForResult(PositionGoogle.this,
+                                REQUEST_CHECK_SETTINGS);
+                    } catch (IntentSender.SendIntentException sendEx) {
+                        // Ignore the error.
+                    }
+                }
+            }
+        });
+    }
 
     @Override
     protected void onResume() {
@@ -437,10 +352,6 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
         mService.stopService(); //Nutne k ukonceni foreground service!
         finish();
     }
-
-//    @Override
-//    public void onAccuracyChanged(Sensor sensor, int i) {
-//    }
 
     /**
      * vrátí prvek z pole
