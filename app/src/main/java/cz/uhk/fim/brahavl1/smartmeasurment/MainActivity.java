@@ -40,21 +40,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Sensor accelerometer;
 
     private boolean firstRun = true;
-    private float offsetX;
-    private float offsetY;
-    private float offsetZ;
-
-//    private float xAverage = 0;
-//    private float yAverage = 0;
-//    private float zAverage = 0;
-//    private int iteration = 0;
 
     private final float alpha = 0.8f;
     private float gravity[] = new float[3];
     private float linear_acceleration[] = new float[3];
-
-    private Button btnStartUpdates;
-    private Button btnStopUpdates;
 
     //Array bodu, ktere se budou vykreslovat na grafu
     private List<Float> zPoints = new ArrayList<>();
@@ -82,8 +71,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         Button btnMapBox = findViewById(R.id.btnMapBoxActivity);
         Button btnOverview = findViewById(R.id.btnOverView);
 
-        btnStartUpdates = findViewById(R.id.btnStartUpdates);
-        btnStopUpdates = findViewById(R.id.btnStopUpdates);
+        Button btnStartUpdates = findViewById(R.id.btnStartUpdates);
+        Button btnStopUpdates = findViewById(R.id.btnStopUpdates);
 
         graph = findViewById(R.id.graph);
 
@@ -93,7 +82,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         //spusteni mereni z akcelerometru
         btnStart.setOnClickListener(view -> {
-            onResume();
+            mSensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
 //            xAverage = 0;
 //            yAverage = 0;
 //            zAverage = 0;
@@ -112,14 +101,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
 
-
         //spusteni aktualizace polohy
         btnStartUpdates.setOnClickListener(view -> {
             checkPermission();
             locationUpdateStarted = true;
 //                startUpdates();
         });
-
 
         btnStopUpdates.setOnClickListener(view -> {
             if (locationUpdateStarted){
@@ -131,19 +118,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         btnNew.setOnClickListener(view -> {
             Intent notificationIntent = new Intent(MainActivity.this, PositionGoogle.class);
-            //TODO PRO VYTVOŘENÍ SLUŽBY V POPŘEDÍ JE TŘEBA VYTVOŘIT TŘÍDU IMPLEMENTUJÍCÍ SERVICE
-//                PendingIntent pendingIntent =
-//                        PendingIntent.getActivity(MainActivity.this, 0, notificationIntent, 0);
-//                Notification notification =
-//                        new Notification.Builder(this, CHANNEL_DEFAULT_IMPORTANCE)
-//                                .setContentTitle(R.string.notification_title)
-//                                .setContentText(R.string.notification_message)
-//                                .setSmallIcon(R.drawable.notification_car)
-//                                .setContentIntent(pendingIntent)
-//                                .setTicker(R.string.ticker_text)
-//                                .build();
-//
-//                startForeground(ONGOING_NOTIFICATION_ID, notification);
             startActivity(notificationIntent);
         });
 
@@ -157,7 +131,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             startActivity(rideOverview);
         });
 //        Log.d("TAG", "v locmodelu je ");
-
 
     }
 
@@ -173,17 +146,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //        txtXValue.setText(sensorEvent.sensor.getVendor());
         float[] pole = sensorEvent.values.clone();
 
-        //TODO PRIPRADNE SMAZAT TOHLE POCITACI, POKUD SE BUDE POZIVAT VYPOCET OFFSETU OD GOOGLU
-        //tady dostáváme aktuální hodnoty po odečtení offsetu
-//        float xValue = getElement(pole, 0) - offsetX;
-//        float yValue = getElement(pole, 1) - offsetY;
-//        float zValue = getElement(pole, 2) - offsetZ;
-
-//        xAverage = xAverage + xValue;
-//        yAverage = yAverage + yValue;
-//        zAverage = zAverage + zValue;
-//        iteration++;
-
         //HighPass filter by Google: (v podstatě se vezme zrychlení 9,8 a to se od toho odečte
         gravity[0] = alpha * gravity[0] + (1 - alpha) * getElement(pole, 0);
         gravity[1] = alpha * gravity[1] + (1 - alpha) * getElement(pole, 1);
@@ -193,13 +155,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         linear_acceleration[1] = getElement(pole, 1) - gravity[1];
         linear_acceleration[2] = getElement(pole, 2) - gravity[2];
 
-
-//        txtXValue.setText(String.valueOf(linear_acceleration[0]));
-//        txtYValue.setText(String.valueOf(linear_acceleration[1]));
-//        txtZValue.setText(String.valueOf(linear_acceleration[2]));
-
-        //TODO TADY ZMENA KVULI GOOGLIMU OFFSETU
-//        zPoints.add(zValue);
         zPoints.add(linear_acceleration[2]);
 
         calculateAverageAndPlotGraph();
@@ -207,13 +162,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void calculateAverageAndPlotGraph() {
-//        xAverage = xAverage / (float) iteration;
-//        yAverage = yAverage / (float) iteration;
-//        zAverage = zAverage / (float) iteration;
-//
-//        txtXValue.setText(String.valueOf(xAverage));
-//        txtYValue.setText(String.valueOf(yAverage));
-//        txtZValue.setText(String.valueOf(zAverage));
         graph.removeAllSeries();
         if (zPoints.size() > 75) zPoints.remove(0);
 
@@ -245,9 +193,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private void calibrationOffset(SensorEvent sensorEvent) {
         float[] pole = sensorEvent.values.clone();
-        offsetX = getElement(pole, 0);
-        offsetY = getElement(pole, 1);
-        offsetZ = getElement(pole, 2);
         firstRun = false;
     }
 
@@ -264,7 +209,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     protected void onResume() {
         super.onResume();
-        mSensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     @Override

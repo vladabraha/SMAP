@@ -120,8 +120,6 @@ public class ForegroundService extends Service implements SensorEventListener {
 
         //inicializace provideru - bez toho neběží aktualizace polohy!
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-
-
     }
 
     //------------------------------------------------------------------------

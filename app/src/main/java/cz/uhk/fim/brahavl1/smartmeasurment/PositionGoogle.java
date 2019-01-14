@@ -50,6 +50,8 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
 
     protected static final int REQUEST_CHECK_SETTINGS = 0x1;
 
+    private Button btnStartLocationUpdate;
+
     //Array bodu, ktere se budou vykreslovat na grafu
     private List<Float> zPointsAverage = new ArrayList<>(); //v tomhle poli budou průměry k jednotlivým rámcům z gps
 
@@ -61,6 +63,7 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
     private Map map;
 
     private List<GeoCoordinate> locationPoints = new ArrayList<>();
+    private boolean locationSettingsSatisfied = false;
 
     ForegroundService mService;
     boolean mBound = false;
@@ -71,7 +74,7 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
         setContentView(R.layout.activity_postion);
 
         txtLocation = findViewById(R.id.txtLocation);
-        Button btnStartLocationUpdate = findViewById(R.id.btnStartLocationUpdates);
+        btnStartLocationUpdate = findViewById(R.id.btnStartLocationUpdates);
 
         //MAPA
         //---------------------------------------------------------------------------------------------------
@@ -98,13 +101,11 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
 
         btnStartLocationUpdate.setOnClickListener(view -> {
             //Pro přepínání funkce tlačítka - jinak by musely bejt 2
-            if (btnStartLocationUpdate.getText() == "save the ride"){
+            if (btnStartLocationUpdate.getText() == "save the ride" && locationSettingsSatisfied){
                 DialogFragment dialog = new SaveDialogFragment();
                 dialog.show(getSupportFragmentManager(), "SaveDialogFragment");
             }else{
                 createLocationRequestForForegroundService(); //spusti location update ve foreground service
-//                createLocationRequest();
-                btnStartLocationUpdate.setText("save the ride");
             }
 
         });
@@ -157,6 +158,8 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
             // location requests here.
             // Tady se to rozjede
              mService.createLocationRequest();
+            locationSettingsSatisfied = true;
+            btnStartLocationUpdate.setText("save the ride");
         });
 
         //tady se to zeptá na oprávnění, pokud nejsou k dispozici
@@ -224,7 +227,9 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
                     }
                 }
             }
+
         });
+
     }
 
     @Override
@@ -304,7 +309,7 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
             txtLocation.setText(String.valueOf(points.get(points.size() - 1).getLongitude()));
 //            locationPoints.add(new GeoCoordinate(location.getLatitude(), location.getLongitude(), 10));
             if (points.size() > 2) {
-                locationPoints.addAll(points);
+                this.locationPoints = points;
                 this.zPointsAverage = zPointsAverage;
                 GeoPolyline polyline = new GeoPolyline(points);
                 MapPolyline mapPolyline = new MapPolyline(polyline);
