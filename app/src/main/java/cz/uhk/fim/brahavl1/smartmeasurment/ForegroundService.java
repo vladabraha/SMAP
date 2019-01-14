@@ -105,7 +105,7 @@ public class ForegroundService extends Service implements SensorEventListener {
                             count++;
                         }
                     }
-                    if (count == 0) {
+                    if (sum == 0) {
                         zPoints.clear();
                         return;
                     }
@@ -177,8 +177,8 @@ public class ForegroundService extends Service implements SensorEventListener {
     public void createLocationRequest() {
 
         //vytvoří se požadavek na polohu
-        mLocationRequest.setInterval(500);
-        mLocationRequest.setFastestInterval(1000);
+        mLocationRequest.setInterval(1000);
+        mLocationRequest.setFastestInterval(500);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
         //tady se přihodí co se chce za pravnění
