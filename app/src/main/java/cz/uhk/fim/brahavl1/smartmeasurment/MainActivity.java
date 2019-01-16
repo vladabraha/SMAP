@@ -36,8 +36,8 @@ import org.apache.commons.math3.stat.StatUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+import cz.uhk.fim.brahavl1.smartmeasurment.Activity.HereMapsMeasurement;
 import cz.uhk.fim.brahavl1.smartmeasurment.Activity.MapBox;
-import cz.uhk.fim.brahavl1.smartmeasurment.Activity.PositionGoogle;
 import cz.uhk.fim.brahavl1.smartmeasurment.Activity.RideOverview;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener, NavigationView.OnNavigationItemSelectedListener {
@@ -128,7 +128,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
 
         btnNew.setOnClickListener(view -> {
-            Intent notificationIntent = new Intent(MainActivity.this, PositionGoogle.class);
+            Intent notificationIntent = new Intent(MainActivity.this, HereMapsMeasurement.class);
             startActivity(notificationIntent);
         });
 
@@ -190,7 +190,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         int id = item.getItemId();
 
         if (id == R.id.nav_start_measurement) {
-            Intent notificationIntent = new Intent(MainActivity.this, PositionGoogle.class);
+            Intent notificationIntent = new Intent(MainActivity.this, HereMapsMeasurement.class);
             startActivityForResult(notificationIntent, 1);
         } else if (id == R.id.nav_overview) {
             Intent rideOverview = new Intent(this, RideOverview.class);

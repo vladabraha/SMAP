@@ -107,6 +107,7 @@ public class RideOverview extends AppCompatActivity implements RecyclerItemTouch
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 // This method is called once with the initial value and again
                 // whenever data at this location is updated.
+                boolean isSettingsSame = true;
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                     rideList.add(postSnapshot.getValue(Ride.class));
 
@@ -115,22 +116,27 @@ public class RideOverview extends AppCompatActivity implements RecyclerItemTouch
                     recyclerView.setAdapter(mAdapter);
 
                     //Pro vyhledání maxima a minima v novém datasetu (slouží pro optimalizaci, aby se nemusely procházet všechna data)
-                    boolean isSettingsSame = false;
-                    List <Ride> missingRideInMinMaxCompute = new ArrayList<>();
+                    isSettingsSame = true;
+//                    List <Ride> missingRideInMinMaxCompute = new ArrayList<>();
                     if (settings != null){
                         for (Ride ride : rideList){
-                            if (settings.getListOfLastRide().contains(ride.getDate())){
+                            if (!settings.getListOfLastRide().contains(ride.getDate())){
+                                isSettingsSame = false;
+//                                missingRideInMinMaxCompute.add(ride);
+                            }else{
                                 isSettingsSame = true;
-                                missingRideInMinMaxCompute.add(ride);
                             }
                         }
+                    }else{
+                        isSettingsSame = false;
                     }
-                    if (!isSettingsSame){
-                        minMaxOfAllRide = new ComputeDataForHeatMap().doInBackground(missingRideInMinMaxCompute);
-                    }else {
-                        minMaxOfAllRide.add(settings.getMinOfAllRides());
-                        minMaxOfAllRide.add(settings.getMaxOfAllRides());
-                    }
+
+                }
+                if (!isSettingsSame){
+                    minMaxOfAllRide = new ComputeDataForHeatMap().doInBackground(rideList);
+                }else {
+                    minMaxOfAllRide.add(settings.getMinOfAllRides());
+                    minMaxOfAllRide.add(settings.getMaxOfAllRides());
                 }
             }
 
@@ -139,6 +145,8 @@ public class RideOverview extends AppCompatActivity implements RecyclerItemTouch
                 // Failed to read value
             }
         });
+
+
 
         //prida RecyclerTouchListener - posloucha události na recycleru - mělo by umožnovat poslouchat libovolny recycler
         recyclerView.addOnItemTouchListener(new RecyclerTouchListener(getApplicationContext(), recyclerView, new RecyclerTouchListener.ClickListener() {
@@ -218,7 +226,7 @@ public class RideOverview extends AppCompatActivity implements RecyclerItemTouch
         int id = item.getItemId();
 
         if (id == R.id.nav_start_measurement) {
-            Intent notificationIntent = new Intent(this, PositionGoogle.class);
+            Intent notificationIntent = new Intent(this, HereMapsMeasurement.class);
             startActivityForResult(notificationIntent, 1);
         } else if (id == R.id.nav_overview) {
             Intent rideOverview = new Intent(this, RideOverview.class);

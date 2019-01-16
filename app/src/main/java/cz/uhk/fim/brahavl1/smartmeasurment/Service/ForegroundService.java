@@ -35,7 +35,7 @@ import com.here.android.mpa.common.GeoCoordinate;
 import java.util.ArrayList;
 import java.util.List;
 
-import cz.uhk.fim.brahavl1.smartmeasurment.Activity.PositionGoogle;
+import cz.uhk.fim.brahavl1.smartmeasurment.Activity.HereMapsMeasurement;
 import cz.uhk.fim.brahavl1.smartmeasurment.R;
 
 public class ForegroundService extends Service implements SensorEventListener {
@@ -236,7 +236,7 @@ public class ForegroundService extends Service implements SensorEventListener {
     private void startForegroundService() {
         createNotificationChannel(); //tohle se doporučuje volat jak jen to jde - kdyžtak neudělá nic
 
-        Intent notificationIntent = new Intent(this, PositionGoogle.class);
+        Intent notificationIntent = new Intent(this, HereMapsMeasurement.class);
         PendingIntent pendingIntent1 = PendingIntent.getActivity(this,
                 0, notificationIntent, 0);
 

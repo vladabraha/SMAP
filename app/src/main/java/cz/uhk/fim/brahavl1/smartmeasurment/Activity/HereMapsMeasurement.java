@@ -48,7 +48,7 @@ import cz.uhk.fim.brahavl1.smartmeasurment.Model.Ride;
 import cz.uhk.fim.brahavl1.smartmeasurment.R;
 import cz.uhk.fim.brahavl1.smartmeasurment.Service.ForegroundService;
 
-public class PositionGoogle extends AppCompatActivity implements ForegroundService.Callbacks, SaveDialogFragment.NoticeDialogListener {
+public class HereMapsMeasurement extends AppCompatActivity implements ForegroundService.Callbacks, SaveDialogFragment.NoticeDialogListener {
 
     protected static final int REQUEST_CHECK_SETTINGS = 0x1;
 
@@ -94,7 +94,7 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
                             15.8343583), Map.Animation.NONE);
                     // ...
                 } else {
-                    Toast.makeText(PositionGoogle.this, error.getDetails(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(HereMapsMeasurement.this, error.getDetails(), Toast.LENGTH_LONG).show();
                 }
             }
         });
@@ -121,7 +121,7 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
 
         //provede dotaz na opravenni a pripadne se zepta o povoleni
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(PositionGoogle.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+            ActivityCompat.requestPermissions(HereMapsMeasurement.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
             return;
         }
 
@@ -175,7 +175,7 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
                         // Show the dialog by calling startResolutionForResult(),
                         // and check the result in onActivityResult().
                         ResolvableApiException resolvable = (ResolvableApiException) e;
-                        resolvable.startResolutionForResult(PositionGoogle.this,
+                        resolvable.startResolutionForResult(HereMapsMeasurement.this,
                                 REQUEST_CHECK_SETTINGS);
                     } catch (IntentSender.SendIntentException sendEx) {
                         // Ignore the error.
@@ -222,7 +222,7 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
                         // Show the dialog by calling startResolutionForResult(),
                         // and check the result in onActivityResult().
                         ResolvableApiException resolvable = (ResolvableApiException) e;
-                        resolvable.startResolutionForResult(PositionGoogle.this,
+                        resolvable.startResolutionForResult(HereMapsMeasurement.this,
                                 REQUEST_CHECK_SETTINGS);
                     } catch (IntentSender.SendIntentException sendEx) {
                         // Ignore the error.
@@ -247,7 +247,7 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
     private void startLocationUpdates() {
         //tohle se zepta na opravnění k pozici, pokud neni
 //        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-//            ActivityCompat.requestPermissions(PositionGoogle.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+//            ActivityCompat.requestPermissions(HereMapsMeasurement.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
 //        } else {
 //            if (mFusedLocationClient != null && mLocationCallback != null) {
 //                mFusedLocationClient.requestLocationUpdates(mLocationRequest,
@@ -290,7 +290,7 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
             // We've bound to LocalService, cast the IBinder and get LocalService instance
             ForegroundService.LocalBinder binder = (ForegroundService.LocalBinder) service;
             mService = binder.getService();
-            mService.registerClient(PositionGoogle.this); //Activity register in the service as client for callabcks!
+            mService.registerClient(HereMapsMeasurement.this); //Activity register in the service as client for callabcks!
             mBound = true;
         }
 

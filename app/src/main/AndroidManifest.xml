@@ -38,7 +38,7 @@
         </activity>
 
         <activity
-            android:name=".Activity.PositionGoogle"
+            android:name=".Activity.HereMapsMeasurement"
             android:launchMode="singleInstance"
             android:parentActivityName=".MainActivity" />
 
