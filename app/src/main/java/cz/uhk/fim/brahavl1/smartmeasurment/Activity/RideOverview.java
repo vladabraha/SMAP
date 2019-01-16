@@ -130,7 +130,6 @@ public class RideOverview extends AppCompatActivity implements RecyclerItemTouch
                     }else{
                         isSettingsSame = false;
                     }
-
                 }
                 if (!isSettingsSame){
                     minMaxOfAllRide = new ComputeDataForHeatMap().doInBackground(rideList);

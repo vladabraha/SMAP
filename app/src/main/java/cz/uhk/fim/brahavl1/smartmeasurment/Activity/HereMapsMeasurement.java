@@ -63,12 +63,14 @@ public class HereMapsMeasurement extends AppCompatActivity implements Foreground
     private LocationRequest mLocationRequest = new LocationRequest();
 
     private Map map;
+    private MapPolyline mapPolyline; //musí tu být, kvůli ukládání objektů, které se mají při updatu smazat
 
     private List<GeoCoordinate> locationPoints = new ArrayList<>();
     private boolean locationSettingsSatisfied = false;
 
     ForegroundService mService;
     boolean mBound = false;
+    boolean firstTime = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,10 +105,10 @@ public class HereMapsMeasurement extends AppCompatActivity implements Foreground
 
         btnStartLocationUpdate.setOnClickListener(view -> {
             //Pro přepínání funkce tlačítka - jinak by musely bejt 2
-            if (btnStartLocationUpdate.getText() == "save the ride" && locationSettingsSatisfied){
+            if (btnStartLocationUpdate.getText() == "save the ride" && locationSettingsSatisfied) {
                 DialogFragment dialog = new SaveDialogFragment();
                 dialog.show(getSupportFragmentManager(), "SaveDialogFragment");
-            }else{
+            } else {
                 createLocationRequestForForegroundService(); //spusti location update ve foreground service
             }
 
@@ -159,7 +161,7 @@ public class HereMapsMeasurement extends AppCompatActivity implements Foreground
             // All location settings are satisfied. The client can initialize
             // location requests here.
             // Tady se to rozjede
-             mService.createLocationRequest();
+            mService.createLocationRequest();
             locationSettingsSatisfied = true;
             btnStartLocationUpdate.setText("save the ride");
         });
@@ -234,13 +236,6 @@ public class HereMapsMeasurement extends AppCompatActivity implements Foreground
 
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-//        startLocationUpdates();
-//        mSensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
-    }
-
     /**
      * spusti looper na dotaz na aktualni polohu, je nutno v oncreate nejdriv nadefinovat, jak má update probihat
      */
@@ -258,25 +253,10 @@ public class HereMapsMeasurement extends AppCompatActivity implements Foreground
     }
 
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-//        stopLocationUpdates();
-//        mSensorManager.unregisterListener(this);
-    }
-
     private void stopLocationUpdates() {
 //        if (mFusedLocationClient != null)
 //            mFusedLocationClient.removeLocationUpdates(mLocationCallback);
 //        mSensorManager.unregisterListener(this);
-    }
-
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-//        unbindService(mConnection);
-//        mBound = false;
     }
 
     /**
@@ -306,15 +286,23 @@ public class HereMapsMeasurement extends AppCompatActivity implements Foreground
      * @param points body ktere prijdou ze servisy
      */
     @Override
-    public void updateClient(List<GeoCoordinate> points, List<Float> zPointsAverage ) {
+    public void updateClient(List<GeoCoordinate> points, List<Float> zPointsAverage) {
         if (map != null) {
             txtLocation.setText(String.valueOf(points.get(points.size() - 1).getLongitude()));
-//            locationPoints.add(new GeoCoordinate(location.getLatitude(), location.getLongitude(), 10));
+
+            //mazání objektů z mapy - jinak by se pořád přidávaly až by se to totálně zaseklo
+            if (!firstTime && points.size() > 3) {
+                map.removeMapObject(mapPolyline);
+            } else {
+                firstTime = false;
+            }
+
+            //převzetí bodů z ForegroundService a jejich vykreslení
             if (points.size() > 2) {
                 this.locationPoints = points;
                 this.zPointsAverage = zPointsAverage;
                 GeoPolyline polyline = new GeoPolyline(points);
-                MapPolyline mapPolyline = new MapPolyline(polyline);
+                mapPolyline = new MapPolyline(polyline);
                 mapPolyline.setLineColor(Color.RED);
                 mapPolyline.setLineWidth(12);
                 map.addMapObject(mapPolyline);
@@ -336,6 +324,7 @@ public class HereMapsMeasurement extends AppCompatActivity implements Foreground
 
     /**
      * Implementace rozhraní pro komunikaci s dialogem (vrátí zpátky text z dialogu)
+     *
      * @param dialog
      * @param rideName v tomhle přijde zpátky text z dialogu
      */
@@ -347,11 +336,11 @@ public class HereMapsMeasurement extends AppCompatActivity implements Foreground
         //tohle je tady protoze Firebase potrebuje prazdnej konstruktor a ten GeoCoordinate bohužel nema
         List<Coordinate> coordinates = new ArrayList<>();
 //        stopLocationUpdates();
-        for (GeoCoordinate geoCoordinate: locationPoints){
+        for (GeoCoordinate geoCoordinate : locationPoints) {
             coordinates.add(new Coordinate(geoCoordinate.getLongitude(), geoCoordinate.getLatitude()));
         }
-        if (coordinates.size() == 0){
-            Toast.makeText(this,"not a single value has been recorded yet", Toast.LENGTH_LONG).show();
+        if (coordinates.size() == 0) {
+            Toast.makeText(this, "not a single value has been recorded yet", Toast.LENGTH_LONG).show();
             return;
         }
         Ride ride = new Ride(rideName, coordinates, zPointsAverage);
