@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cz.uhk.fim.brahavl1.smartmeasurment.Database.DatabaseConnector;
+import cz.uhk.fim.brahavl1.smartmeasurment.MainActivity;
 import cz.uhk.fim.brahavl1.smartmeasurment.Model.Ride;
 import cz.uhk.fim.brahavl1.smartmeasurment.Model.Settings;
 import cz.uhk.fim.brahavl1.smartmeasurment.R;
@@ -182,7 +183,7 @@ public class RideOverview extends AppCompatActivity implements RecyclerItemTouch
         ActionBar actionbar = getSupportActionBar();
         actionbar.setDisplayHomeAsUpEnabled(true); //hodi do levyho horniho rohu definovanou ikkonu (hamburger menu)
         actionbar.setHomeAsUpIndicator(R.drawable.ic_menu);
-        navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         navigationView.getMenu().getItem(1).setChecked(true);
     }
@@ -190,7 +191,7 @@ public class RideOverview extends AppCompatActivity implements RecyclerItemTouch
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -228,10 +229,10 @@ public class RideOverview extends AppCompatActivity implements RecyclerItemTouch
             Intent notificationIntent = new Intent(this, HereMapsMeasurement.class);
             startActivityForResult(notificationIntent, 1);
         } else if (id == R.id.nav_overview) {
-            Intent rideOverview = new Intent(this, RideOverview.class);
-            startActivityForResult(rideOverview, 2);
-        } else if (id == R.id.nav_settings) {
 
+        } else if (id == R.id.nav_settings) {
+            Intent rideOverview = new Intent(this, MainActivity.class);
+            startActivityForResult(rideOverview, 2);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
