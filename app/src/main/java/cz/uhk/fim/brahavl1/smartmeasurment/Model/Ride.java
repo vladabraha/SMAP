@@ -1,16 +1,10 @@
-package cz.uhk.fim.brahavl1.smartmeasurment;
-
-import android.os.Parcel;
-import android.os.Parcelable;
-
-import com.here.android.mpa.common.GeoCoordinate;
+package cz.uhk.fim.brahavl1.smartmeasurment.Model;
 
 import java.io.Serializable;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
+
+import cz.uhk.fim.brahavl1.smartmeasurment.Model.Coordinate;
 
 public class Ride implements Serializable{
 

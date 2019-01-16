@@ -1,4 +1,4 @@
-package cz.uhk.fim.brahavl1.smartmeasurment;
+package cz.uhk.fim.brahavl1.smartmeasurment.Fragment;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -14,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
+import cz.uhk.fim.brahavl1.smartmeasurment.R;
 import timber.log.Timber;
 
 public class SaveDialogFragment extends DialogFragment {

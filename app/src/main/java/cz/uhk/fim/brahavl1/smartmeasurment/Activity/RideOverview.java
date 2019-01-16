@@ -1,16 +1,21 @@
-package cz.uhk.fim.brahavl1.smartmeasurment;
+package cz.uhk.fim.brahavl1.smartmeasurment.Activity;
 
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
 
@@ -25,7 +30,15 @@ import org.apache.commons.math3.stat.StatUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RideOverview extends AppCompatActivity implements RecyclerItemTouchHelper.RecyclerItemTouchHelperListener {
+import cz.uhk.fim.brahavl1.smartmeasurment.Database.DatabaseConnector;
+import cz.uhk.fim.brahavl1.smartmeasurment.Model.Ride;
+import cz.uhk.fim.brahavl1.smartmeasurment.Model.Settings;
+import cz.uhk.fim.brahavl1.smartmeasurment.R;
+import cz.uhk.fim.brahavl1.smartmeasurment.Recycler.RecyclerItemTouchHelper;
+import cz.uhk.fim.brahavl1.smartmeasurment.Recycler.RecyclerTouchListener;
+import cz.uhk.fim.brahavl1.smartmeasurment.Recycler.RideListAdapter;
+
+public class RideOverview extends AppCompatActivity implements RecyclerItemTouchHelper.RecyclerItemTouchHelperListener, NavigationView.OnNavigationItemSelectedListener {
 
     private RecyclerView recyclerView;
     private RecyclerView.Adapter mAdapter;
@@ -34,11 +47,15 @@ public class RideOverview extends AppCompatActivity implements RecyclerItemTouch
     private DatabaseConnector databaseConnector = new DatabaseConnector();
 
     private List<Ride> rideList = new ArrayList<>();
+    private Settings settings;
 
     private LinearLayout linearLayout;
 
     boolean finishedCalculation = false;
     List<Double> minMaxOfAllRide;
+
+    private DrawerLayout drawer;
+    private NavigationView navigationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,9 +79,27 @@ public class RideOverview extends AppCompatActivity implements RecyclerItemTouch
         //vytažení layoutu pro snackbar (aby vedel kde se ma vytvorit)
         linearLayout = findViewById(R.id.linearLayoutRideOverView);
 
-
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference("ride");
+        DatabaseReference myRef = database.getReference("Settings");
+
+        // Read from the database
+        myRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                // This method is called once with the initial value and again
+                // whenever data at this location is updated.
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    settings = postSnapshot.getValue(Settings.class);
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                // Failed to read value
+            }
+        });
+
+
+        myRef = database.getReference("ride");
 
         // Read from the database
         myRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -78,8 +113,24 @@ public class RideOverview extends AppCompatActivity implements RecyclerItemTouch
                     // specify an adapter (see also next example)
                     mAdapter = new RideListAdapter(rideList);
                     recyclerView.setAdapter(mAdapter);
-                    minMaxOfAllRide = new ComputeDataForHeatMap().doInBackground(rideList);
-//                    Log.d("hoo", "vysledek je " + String.valueOf(minMaxOfAllRide.get(0)) + " " + String.valueOf(minMaxOfAllRide.get(1)));
+
+                    //Pro vyhledání maxima a minima v novém datasetu (slouží pro optimalizaci, aby se nemusely procházet všechna data)
+                    boolean isSettingsSame = false;
+                    List <Ride> missingRideInMinMaxCompute = new ArrayList<>();
+                    if (settings != null){
+                        for (Ride ride : rideList){
+                            if (settings.getListOfLastRide().contains(ride.getDate())){
+                                isSettingsSame = true;
+                                missingRideInMinMaxCompute.add(ride);
+                            }
+                        }
+                    }
+                    if (!isSettingsSame){
+                        minMaxOfAllRide = new ComputeDataForHeatMap().doInBackground(missingRideInMinMaxCompute);
+                    }else {
+                        minMaxOfAllRide.add(settings.getMinOfAllRides());
+                        minMaxOfAllRide.add(settings.getMaxOfAllRides());
+                    }
                 }
             }
 
@@ -96,10 +147,19 @@ public class RideOverview extends AppCompatActivity implements RecyclerItemTouch
                 Ride ride = rideList.get(position);
 //                Toast.makeText(getApplicationContext(), ride.getName() + " is selected!", Toast.LENGTH_SHORT).show();
 
+                if (settings != null){
+                    double historyMax = settings.getMaxOfAllRides();
+                    if (historyMax > minMaxOfAllRide.get(1)){
+                        minMaxOfAllRide.set(0, settings.getMinOfAllRides());
+                        minMaxOfAllRide.set(1, settings.getMaxOfAllRides());
+                    }
+                }
+                databaseConnector.saveSettings(minMaxOfAllRide.get(0), minMaxOfAllRide.get(1), rideList);
                 Intent rideDetail = new Intent(RideOverview.this, RideDetail.class);
                 rideDetail.putExtra("ride",ride);
                 rideDetail.putExtra("min",minMaxOfAllRide.get(0));
                 rideDetail.putExtra("max",minMaxOfAllRide.get(1));
+
                 startActivity(rideDetail);
             }
 
@@ -109,9 +169,75 @@ public class RideOverview extends AppCompatActivity implements RecyclerItemTouch
 //                Toast.makeText(getApplicationContext(), ride.getName() + " is selected!", Toast.LENGTH_SHORT).show();
             }
         }));
-
+        //------------------------------------------------------------------------
+        // NAVIGATION DRAWER MENU
+        drawer = findViewById(R.id.drawer_layout);
+        ActionBar actionbar = getSupportActionBar();
+        actionbar.setDisplayHomeAsUpEnabled(true); //hodi do levyho horniho rohu definovanou ikkonu (hamburger menu)
+        actionbar.setHomeAsUpIndicator(R.drawable.ic_menu);
+        navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+        navigationView.getMenu().getItem(1).setChecked(true);
     }
 
+
+    @Override
+    public void onBackPressed() {
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == android.R.id.home) {
+            if (!drawer.isDrawerOpen(GravityCompat.START)) {
+                drawer.openDrawer(GravityCompat.START);
+                return true;
+            } else {
+                drawer.closeDrawers();
+                return false;
+            }
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @SuppressWarnings("StatementWithEmptyBody")
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+        // Handle navigation view item clicks here.
+        int id = item.getItemId();
+
+        if (id == R.id.nav_start_measurement) {
+            Intent notificationIntent = new Intent(this, PositionGoogle.class);
+            startActivityForResult(notificationIntent, 1);
+        } else if (id == R.id.nav_overview) {
+            Intent rideOverview = new Intent(this, RideOverview.class);
+            startActivityForResult(rideOverview, 2);
+        } else if (id == R.id.nav_settings) {
+
+        }
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        navigationView.getMenu().getItem(1).setChecked(true);
+    }
+
+    //---------------------------------------------------------------------------------------------
     /** implementace rozhrani z RecyclerTouchHelperu
      * callback when recycler view is swiped
      * item will be removed on swiped
@@ -151,7 +277,7 @@ public class RideOverview extends AppCompatActivity implements RecyclerItemTouch
     //co ma prijit, progress a co se ma vratit z AsyncTasku
     private class ComputeDataForHeatMap extends AsyncTask<List<Ride>, Integer, List<Double>> {
 
-        //hledame 90 percentil,
+
         @Override
         protected List<Double> doInBackground(List<Ride>... lists) {
             int accelerometrDataSize = 0;
@@ -170,10 +296,24 @@ public class RideOverview extends AppCompatActivity implements RecyclerItemTouch
                 }
             }
 
+//            List<Ride>[] ridesForCompute = lists;
+//
+//            //hledame 90 percentil
+//            List<Ride> utilList = new ArrayList(Arrays.asList(ridesForCompute));
+//
+//            List<Float> accelData = new ArrayList<>();
+//            for (Ride ride : utilList){
+//                accelData.addAll(ride.getAccelerometerData());
+//            }
+//            Collections.sort(accelData);
+
+            double minimum = StatUtils.min(points);
             double maximum = StatUtils.max(points);
-            double minimun = StatUtils.min(points);
+//           double maximum = accelData.get((int)((accelData.size() - 1) * 0.8));
+
+
             List<Double> list = new ArrayList<>();
-            list.add(minimun);
+            list.add(minimum);
             list.add(maximum);
 
             return list;
@@ -183,6 +323,7 @@ public class RideOverview extends AppCompatActivity implements RecyclerItemTouch
 
 //            Log.d("hoo", "tak už je hotovo " + String.valueOf(progress[0]));
         }
+
 
         protected void onPostExecute(List<Double> list) {
             finishedCalculation = true;

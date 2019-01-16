@@ -1,4 +1,4 @@
-package cz.uhk.fim.brahavl1.smartmeasurment;
+package cz.uhk.fim.brahavl1.smartmeasurment.Recycler;
 
 import android.graphics.Canvas;
 import android.support.annotation.NonNull;

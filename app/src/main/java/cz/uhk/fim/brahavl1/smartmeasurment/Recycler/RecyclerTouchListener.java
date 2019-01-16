@@ -1,4 +1,4 @@
-package cz.uhk.fim.brahavl1.smartmeasurment;
+package cz.uhk.fim.brahavl1.smartmeasurment.Recycler;
 
 import android.content.Context;
 import android.support.annotation.NonNull;

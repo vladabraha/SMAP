@@ -14,9 +14,14 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -28,13 +33,19 @@ import com.jjoe64.graphview.series.LineGraphSeries;
 
 import org.apache.commons.math3.stat.StatUtils;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements SensorEventListener {
+import cz.uhk.fim.brahavl1.smartmeasurment.Activity.MapBox;
+import cz.uhk.fim.brahavl1.smartmeasurment.Activity.PositionGoogle;
+import cz.uhk.fim.brahavl1.smartmeasurment.Activity.RideOverview;
+
+public class MainActivity extends AppCompatActivity implements SensorEventListener, NavigationView.OnNavigationItemSelectedListener {
 
     private TextView txtLocation;
+
+    private DrawerLayout drawer;
+    private  NavigationView navigationView;
 
     private SensorManager mSensorManager;
     private Sensor accelerometer;
@@ -109,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         });
 
         btnStopUpdates.setOnClickListener(view -> {
-            if (locationUpdateStarted){
+            if (locationUpdateStarted) {
                 stopUpdates();
                 locationUpdateStarted = false;
             }
@@ -130,8 +141,74 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             Intent rideOverview = new Intent(this, RideOverview.class);
             startActivity(rideOverview);
         });
-//        Log.d("TAG", "v locmodelu je ");
 
+        //------------------------------------------------------------------------
+        // NAVIGATION DRAWER MENU
+        drawer = findViewById(R.id.drawer_layout);
+        ActionBar actionbar = getSupportActionBar();
+        actionbar.setDisplayHomeAsUpEnabled(true); //hodi do levyho horniho rohu definovanou ikkonu (hamburger menu)
+        actionbar.setHomeAsUpIndicator(R.drawable.ic_menu);
+        navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+    }
+
+
+    @Override
+    public void onBackPressed() {
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == android.R.id.home) {
+            if (!drawer.isDrawerOpen(GravityCompat.START)) {
+                drawer.openDrawer(GravityCompat.START);
+                return true;
+            } else {
+                drawer.closeDrawers();
+                return false;
+            }
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @SuppressWarnings("StatementWithEmptyBody")
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+        // Handle navigation view item clicks here.
+        int id = item.getItemId();
+
+        if (id == R.id.nav_start_measurement) {
+            Intent notificationIntent = new Intent(MainActivity.this, PositionGoogle.class);
+            startActivityForResult(notificationIntent, 1);
+        } else if (id == R.id.nav_overview) {
+            Intent rideOverview = new Intent(this, RideOverview.class);
+            startActivityForResult(rideOverview, 2);
+        } else if (id == R.id.nav_settings) {
+
+        }
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        for (int i = 0; i < navigationView.getMenu().size(); i++) {
+            navigationView.getMenu().getItem(i).setChecked(false);
+        }
     }
 
     //------------------------------------------------------------------------

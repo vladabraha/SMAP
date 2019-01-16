@@ -1,4 +1,4 @@
-package cz.uhk.fim.brahavl1.smartmeasurment;
+package cz.uhk.fim.brahavl1.smartmeasurment.Model;
 
 import java.io.Serializable;
 

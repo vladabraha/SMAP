@@ -1,4 +1,4 @@
-package cz.uhk.fim.brahavl1.smartmeasurment;
+package cz.uhk.fim.brahavl1.smartmeasurment.Service;
 
 import android.Manifest;
 import android.app.Activity;
@@ -20,7 +20,6 @@ import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -35,6 +34,9 @@ import com.here.android.mpa.common.GeoCoordinate;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import cz.uhk.fim.brahavl1.smartmeasurment.Activity.PositionGoogle;
+import cz.uhk.fim.brahavl1.smartmeasurment.R;
 
 public class ForegroundService extends Service implements SensorEventListener {
     int mStartMode;       // indicates how to behave if the service is killed
@@ -71,7 +73,7 @@ public class ForegroundService extends Service implements SensorEventListener {
      * runs in the same process as its clients, we don't need to deal with IPC.
      */
     public class LocalBinder extends Binder {
-        ForegroundService getService() {
+        public ForegroundService getService() {
             // Return this instance of LocalService so clients can call public methods
             return ForegroundService.this;
         }

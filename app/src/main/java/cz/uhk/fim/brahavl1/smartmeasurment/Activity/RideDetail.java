@@ -1,9 +1,8 @@
-package cz.uhk.fim.brahavl1.smartmeasurment;
+package cz.uhk.fim.brahavl1.smartmeasurment.Activity;
 
 import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.here.android.mpa.common.GeoCoordinate;
@@ -20,6 +19,10 @@ import org.apache.commons.math3.stat.StatUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import cz.uhk.fim.brahavl1.smartmeasurment.Model.Coordinate;
+import cz.uhk.fim.brahavl1.smartmeasurment.Model.Ride;
+import cz.uhk.fim.brahavl1.smartmeasurment.R;
 
 public class RideDetail extends AppCompatActivity {
 

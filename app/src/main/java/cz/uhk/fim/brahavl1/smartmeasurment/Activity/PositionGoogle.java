@@ -1,4 +1,4 @@
-package cz.uhk.fim.brahavl1.smartmeasurment;
+package cz.uhk.fim.brahavl1.smartmeasurment.Activity;
 
 import android.Manifest;
 import android.content.ComponentName;
@@ -8,10 +8,6 @@ import android.content.IntentSender;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
 import android.location.Location;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
@@ -28,7 +24,6 @@ import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResponse;
@@ -45,6 +40,13 @@ import com.here.android.mpa.mapping.MapPolyline;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import cz.uhk.fim.brahavl1.smartmeasurment.Database.DatabaseConnector;
+import cz.uhk.fim.brahavl1.smartmeasurment.Fragment.SaveDialogFragment;
+import cz.uhk.fim.brahavl1.smartmeasurment.Model.Coordinate;
+import cz.uhk.fim.brahavl1.smartmeasurment.Model.Ride;
+import cz.uhk.fim.brahavl1.smartmeasurment.R;
+import cz.uhk.fim.brahavl1.smartmeasurment.Service.ForegroundService;
 
 public class PositionGoogle extends AppCompatActivity implements ForegroundService.Callbacks, SaveDialogFragment.NoticeDialogListener {
 
@@ -340,9 +342,11 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
 
     @Override
     public void onDialogPositiveClick(DialogFragment dialog, String rideName) {
+        mService.stopService(); //Nutne k ukonceni foreground service!
+
         //tohle je tady protoze Firebase potrebuje prazdnej konstruktor a ten GeoCoordinate bohužel nema
         List<Coordinate> coordinates = new ArrayList<>();
-        stopLocationUpdates();
+//        stopLocationUpdates();
         for (GeoCoordinate geoCoordinate: locationPoints){
             coordinates.add(new Coordinate(geoCoordinate.getLongitude(), geoCoordinate.getLatitude()));
         }
@@ -354,7 +358,6 @@ public class PositionGoogle extends AppCompatActivity implements ForegroundServi
         DatabaseConnector databaseConnector = new DatabaseConnector();
         databaseConnector.saveRide(ride);
         Toast.makeText(this, "succesfuly saved into database", Toast.LENGTH_LONG).show();
-        mService.stopService(); //Nutne k ukonceni foreground service!
         finish();
     }
 
