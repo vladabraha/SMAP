@@ -39,8 +39,9 @@
                 android:layout_marginRight="50dp"
                 android:layout_marginLeft="50dp"
                 android:background="@drawable/btn_rounded"
-                android:text="start measurement"
-                android:textColor="@color/btn_text" />
+                android:textSize="15sp"
+                android:text="start measuring"
+                android:textColor="@color/btn_start_measurement_text" />
 
             <!--<Button-->
                 <!--android:id="@+id/btnStopLocationUpdates"-->

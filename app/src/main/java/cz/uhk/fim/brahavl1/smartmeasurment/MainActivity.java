@@ -78,9 +78,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         Button btnPause = findViewById(R.id.btnPause);
         Button btnStart = findViewById(R.id.btnStart);
-        Button btnNew = findViewById(R.id.btnNew);
+//        Button btnNew = findViewById(R.id.btnNew);
         Button btnMapBox = findViewById(R.id.btnMapBoxActivity);
-        Button btnOverview = findViewById(R.id.btnOverView);
+//        Button btnOverview = findViewById(R.id.btnOverView);
 
         Button btnStartUpdates = findViewById(R.id.btnStartUpdates);
         Button btnStopUpdates = findViewById(R.id.btnStopUpdates);
@@ -127,20 +127,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         });
 
 
-        btnNew.setOnClickListener(view -> {
-            Intent notificationIntent = new Intent(MainActivity.this, HereMapsMeasurement.class);
-            startActivity(notificationIntent);
-        });
+//        btnNew.setOnClickListener(view -> {
+//            Intent notificationIntent = new Intent(MainActivity.this, HereMapsMeasurement.class);
+//            startActivity(notificationIntent);
+//        });
 
         btnMapBox.setOnClickListener(view -> {
             Intent mapBox = new Intent(MainActivity.this, MapBox.class);
             startActivity(mapBox);
         });
 
-        btnOverview.setOnClickListener(view -> {
-            Intent rideOverview = new Intent(this, RideOverview.class);
-            startActivity(rideOverview);
-        });
+//        btnOverview.setOnClickListener(view -> {
+//            Intent rideOverview = new Intent(this, RideOverview.class);
+//            startActivity(rideOverview);
+//        });
 
         //------------------------------------------------------------------------
         // NAVIGATION DRAWER MENU

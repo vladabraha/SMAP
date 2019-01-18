@@ -5,8 +5,9 @@
     <color name="colorAccent">#D81B60</color>
     <color name="grey">#A9A9A9</color>
     <color name="white">#ffffff</color>
-    <color name="btn_purple">#45567F</color>
-    <color name="btn_text">#c7c6be</color>
+
+    <color name="btn_start_measurement_text">#FCFFFC</color>
+    <color name="line_between_each_value_in_recyclerView">#E1E5F2</color>
 
 
 </resources>

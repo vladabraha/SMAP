@@ -88,11 +88,11 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <Button
-                    android:id="@+id/btnNew"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Measure the roads" />
+                <!--<Button-->
+                    <!--android:id="@+id/btnNew"-->
+                    <!--android:layout_width="wrap_content"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:text="Measure the roads" />-->
 
                 <Button
                     android:id="@+id/btnMapBoxActivity"
@@ -101,12 +101,12 @@
                     android:layout_marginLeft="5dp"
                     android:text="MapBox" />
 
-                <Button
-                    android:id="@+id/btnOverView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="5dp"
-                    android:text="Overview" />
+                <!--<Button-->
+                    <!--android:id="@+id/btnOverView"-->
+                    <!--android:layout_width="wrap_content"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:layout_marginLeft="5dp"-->
+                    <!--android:text="Overview" />-->
             </LinearLayout>
 
 
