@@ -26,6 +26,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import org.apache.commons.math3.stat.StatUtils;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -233,6 +234,9 @@ public class RideOverview extends AppCompatActivity implements RecyclerItemTouch
         } else if (id == R.id.nav_settings) {
             Intent rideOverview = new Intent(this, MainActivity.class);
             startActivityForResult(rideOverview, 2);
+        } else if (id == R.id.nav_heat_map) {
+            Intent rideOverview = new Intent(this, HeatMap.class);
+            startActivityForResult(rideOverview, 3);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -281,44 +285,25 @@ public class RideOverview extends AppCompatActivity implements RecyclerItemTouch
         }
     }
 
-    //TODO HLEDANI MAXIMA A MINIMA V PŘÍPADĚ VELKÉHO MNOŽSTVÍ DAT OPTIMALIZOVAT!!  A NEFUNGUJE
+    /**
+     * Metoda vypočítá (asynchroně) percetil ze zadaného seznamu
+     * percentil - aby ořezal outliery (vzdáleného hodnoty)
+     */
     //co ma prijit, progress a co se ma vratit z AsyncTasku
     private class ComputeDataForHeatMap extends AsyncTask<List<Ride>, Integer, List<Double>> {
 
 
         @Override
         protected List<Double> doInBackground(List<Ride>... lists) {
-            int accelerometrDataSize = 0;
+            DescriptiveStatistics statistic = new DescriptiveStatistics();
             for (Ride ride : rideList){
-                accelerometrDataSize += ride.getAccelerometerData().size();
-            }
-            double[] points = new double[accelerometrDataSize];
-            int increment = 0;
-            for (Ride ride: rideList){
-                for (Float point : ride.getAccelerometerData()){
-                    points[increment] = (Double.valueOf(point));
-                    increment++;
-                    float progress = (increment / accelerometrDataSize) * 100;
-                    Integer i = new Integer(Math.round(progress));
-                    publishProgress(i);
+                for (Float accelData : ride.getAccelerometerData()){
+                    statistic.addValue(accelData);
                 }
             }
 
-//            List<Ride>[] ridesForCompute = lists;
-//
-//            //hledame 90 percentil
-//            List<Ride> utilList = new ArrayList(Arrays.asList(ridesForCompute));
-//
-//            List<Float> accelData = new ArrayList<>();
-//            for (Ride ride : utilList){
-//                accelData.addAll(ride.getAccelerometerData());
-//            }
-//            Collections.sort(accelData);
-
-            double minimum = StatUtils.min(points);
-            double maximum = StatUtils.max(points);
-//           double maximum = accelData.get((int)((accelData.size() - 1) * 0.8));
-
+            double minimum = statistic.getPercentile(1);
+            double maximum = statistic.getPercentile(99);
 
             List<Double> list = new ArrayList<>();
             list.add(minimum);

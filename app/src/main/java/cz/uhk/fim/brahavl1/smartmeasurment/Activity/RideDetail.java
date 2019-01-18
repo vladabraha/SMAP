@@ -10,6 +10,7 @@ import com.here.android.mpa.common.GeoPolyline;
 import com.here.android.mpa.common.OnEngineInitListener;
 import com.here.android.mpa.mapping.Map;
 import com.here.android.mpa.mapping.MapFragment;
+import com.here.android.mpa.mapping.MapObject;
 import com.here.android.mpa.mapping.MapPolyline;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
@@ -82,27 +83,22 @@ public class RideDetail extends AppCompatActivity {
                         map.setCenter(new GeoCoordinate(locationPoints.get(halfListPosition).getLatitude(), locationPoints.get(halfListPosition).getLongitude()), Map.Animation.NONE);
                         map.setZoomLevel((map.getMaxZoomLevel() + map.getMinZoomLevel()) / 2);
 
-//                    GeoPolyline polyline = new GeoPolyline(locationPoints);
-//                    MapPolyline mapPolyline = new MapPolyline(polyline);
-//                    mapPolyline.setLineColor(Color.RED);
-//                    mapPolyline.setLineWidth(12);
-//                    map.addMapObject(mapPolyline);
 
-                        //
+                        //POZOR do mapy přidávat vždy jako jeden objekt, jinak se to zaseka!!
+                        //projede všechny body, vytvoří mezi nima čáru s příslušnou barvou a až budou všechny, tak se přidaj do mapy
+                        List<MapObject> mapObjectList = new ArrayList<>();
                         for (int i = 1; i < locationPoints.size() - 1; i++) {
                             List<GeoCoordinate> positionPoints = new ArrayList<>();
                             positionPoints.add(new GeoCoordinate(rideCoordinates.get(i - 1).getLatitude(), rideCoordinates.get(i - 1).getLongtitude(), 10));
                             positionPoints.add(new GeoCoordinate(rideCoordinates.get(i).getLatitude(), rideCoordinates.get(i).getLongtitude(), 10));
-
-
                             GeoPolyline polyline = new GeoPolyline(positionPoints);
                             MapPolyline mapPolyline = new MapPolyline(polyline);
                             mapPolyline.setLineColor(interpolateColor(Color.GREEN, Color.RED, accelerometerPoints.get(i) / (float) difference));
-
-
                             mapPolyline.setLineWidth(12);
-                            map.addMapObject(mapPolyline);
+                            mapObjectList.add(mapPolyline);
                         }
+                        map.addMapObjects(mapObjectList);
+
                     }
                 } else {
                     System.out.println("ERROR: Cannot initialize Map Fragment");

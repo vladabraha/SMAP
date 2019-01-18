@@ -36,6 +36,7 @@ import org.apache.commons.math3.stat.StatUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+import cz.uhk.fim.brahavl1.smartmeasurment.Activity.HeatMap;
 import cz.uhk.fim.brahavl1.smartmeasurment.Activity.HereMapsMeasurement;
 import cz.uhk.fim.brahavl1.smartmeasurment.Activity.MapBox;
 import cz.uhk.fim.brahavl1.smartmeasurment.Activity.RideOverview;
@@ -150,7 +151,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         actionbar.setHomeAsUpIndicator(R.drawable.ic_menu);
         navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-        navigationView.getMenu().getItem(2).setChecked(true);
+        navigationView.getMenu().getItem(3).setChecked(true);
     }
 
 
@@ -196,9 +197,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         } else if (id == R.id.nav_overview) {
             Intent rideOverview = new Intent(this, RideOverview.class);
             startActivityForResult(rideOverview, 2);
-        } else if (id == R.id.nav_settings) {
+        } else if (id == R.id.nav_heat_map) {
+            Intent rideOverview = new Intent(this, HeatMap.class);
+            startActivityForResult(rideOverview, 3);
+        }else if (id == R.id.nav_settings) {
 
         }
+
+
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
@@ -210,6 +216,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         for (int i = 0; i < navigationView.getMenu().size(); i++) {
             navigationView.getMenu().getItem(i).setChecked(false);
         }
+        navigationView.getMenu().getItem(3).setChecked(true);
     }
 
     //------------------------------------------------------------------------

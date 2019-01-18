@@ -28,6 +28,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
+        <activity
+            android:name=".Activity.HeatMap"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"/>
 
         <activity android:name=".MainActivity">
             <intent-filter>
@@ -36,7 +39,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".Activity.HereMapsMeasurement"
             android:launchMode="singleInstance"
