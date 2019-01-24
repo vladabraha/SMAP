@@ -16,6 +16,7 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -319,6 +320,16 @@ public class HereMapsMeasurement extends AppCompatActivity implements Foreground
         // code here to show dialog
         super.onBackPressed();  // optional depending on your needs
         mService.stopService();
+    }
+
+    /**
+     * obslouží tlačítko zpět v navigation baru
+     * @param item položka, která přijde při stisknutí tlačíka
+     * @return vrací to co předek
+     */
+    public boolean onOptionsItemSelected(MenuItem item){
+        mService.stopService();
+        return super.onOptionsItemSelected(item);
     }
 
 
