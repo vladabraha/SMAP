@@ -8,16 +8,16 @@
 
 
     <!--<LinearLayout-->
-        <!--android:id="@+id/content_frame"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="match_parent">-->
+    <!--android:id="@+id/content_frame"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent">-->
 
-        <!--<android.support.v7.widget.Toolbar-->
-            <!--android:id="@+id/toolbar"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="?attr/actionBarSize"-->
-            <!--android:background="?attr/colorPrimary"-->
-            <!--android:theme="@style/ThemeOverlay.AppCompat.ActionBar" />-->
+    <!--<android.support.v7.widget.Toolbar-->
+    <!--android:id="@+id/toolbar"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="?attr/actionBarSize"-->
+    <!--android:background="?attr/colorPrimary"-->
+    <!--android:theme="@style/ThemeOverlay.AppCompat.ActionBar" />-->
 
     <!--</LinearLayout>-->
 
@@ -54,60 +54,75 @@
             android:layout_height="200dip" />
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/txtPosition"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="tady se ma zobrazit pozice" />
-
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-
-                <Button
-                    android:id="@+id/btnStartUpdates"
+                <TextView
+                    android:id="@+id/txtPosition"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="start location updates" />
+                    android:padding="5dp"
+                    android:text="Míra aproximace heatmapy " />
 
-                <Button
-                    android:id="@+id/btnStopUpdates"
+                <TextView
+                    android:id="@+id/txtAmountOfApproximation"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="stop location updates" />
+                    android:padding="5dp"
+                    android:textColor="@color/colorAccent" />
+
             </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
+            <!--<Button-->
+            <!--android:id="@+id/btnStartUpdates"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:text="start location updates" />-->
 
-                <!--<Button-->
-                    <!--android:id="@+id/btnNew"-->
-                    <!--android:layout_width="wrap_content"-->
-                    <!--android:layout_height="wrap_content"-->
-                    <!--android:text="Measure the roads" />-->
+            <!--<Button-->
+            <!--android:id="@+id/btnStopUpdates"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:text="stop location updates" />-->
 
-                <Button
-                    android:id="@+id/btnMapBoxActivity"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="5dp"
-                    android:text="MapBox" />
+            <SeekBar
+                android:id="@+id/seekBar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="5dp" />
 
-                <!--<Button-->
-                    <!--android:id="@+id/btnOverView"-->
-                    <!--android:layout_width="wrap_content"-->
-                    <!--android:layout_height="wrap_content"-->
-                    <!--android:layout_marginLeft="5dp"-->
-                    <!--android:text="Overview" />-->
-            </LinearLayout>
+
+            <!--<LinearLayout-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:orientation="horizontal">-->
+
+            <!--&lt;!&ndash;<Button&ndash;&gt;-->
+            <!--&lt;!&ndash;android:id="@+id/btnNew"&ndash;&gt;-->
+            <!--&lt;!&ndash;android:layout_width="wrap_content"&ndash;&gt;-->
+            <!--&lt;!&ndash;android:layout_height="wrap_content"&ndash;&gt;-->
+            <!--&lt;!&ndash;android:text="Measure the roads" />&ndash;&gt;-->
+
+            <!--<Button-->
+            <!--android:id="@+id/btnMapBoxActivity"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_marginLeft="5dp"-->
+            <!--android:text="MapBox" />-->
+
+            <!--&lt;!&ndash;<Button&ndash;&gt;-->
+            <!--&lt;!&ndash;android:id="@+id/btnOverView"&ndash;&gt;-->
+            <!--&lt;!&ndash;android:layout_width="wrap_content"&ndash;&gt;-->
+            <!--&lt;!&ndash;android:layout_height="wrap_content"&ndash;&gt;-->
+            <!--&lt;!&ndash;android:layout_marginLeft="5dp"&ndash;&gt;-->
+            <!--&lt;!&ndash;android:text="Overview" />&ndash;&gt;-->
+            <!--</LinearLayout>-->
 
 
         </LinearLayout>

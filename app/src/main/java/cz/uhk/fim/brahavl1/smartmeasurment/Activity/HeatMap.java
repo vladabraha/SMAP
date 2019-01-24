@@ -2,6 +2,8 @@ package cz.uhk.fim.brahavl1.smartmeasurment.Activity;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -145,12 +147,16 @@ public class HeatMap extends Activity {
                 positionPoints.add(new GeoCoordinate(ride.getLocationPoints().get(i - 1).getLatitude(), ride.getLocationPoints().get(i - 1).getLongtitude(), 10));
                 positionPoints.add(new GeoCoordinate(ride.getLocationPoints().get(i).getLatitude(), ride.getLocationPoints().get(i).getLongtitude(), 10));
 
-                //aproximace kvůli lepšímu výkonu - každejch 10 přímek vypočítej průměr otřesu pro celejch 10 bodů -> bude mene objektu v mape a plynulejsi cara
-                final int ammountOfApproximation = 4;
-                int k = i / ammountOfApproximation;
-                double l = (double) i / ammountOfApproximation;
+                //načtení hodnoty aproximace z sharedPreferences
+                SharedPreferences sharedPref = HeatMap.this.getSharedPreferences(getString(R.string.amountOfApproximation), MODE_PRIVATE);
+                final int defaultValue = 4;
+                final int amountOfApproximation = sharedPref.getInt(getString(R.string.amountOfApproximation), defaultValue);
+
+                //aproximace kvůli lepšímu výkonu - každejch x přímek vypočítej průměr otřesu pro celejch x bodů -> bude mene objektu v mape a plynulejsi cara
+                int k = i / amountOfApproximation;
+                double l = (double) i / amountOfApproximation;
                 if ((double) k == l) {
-                    for (int q = 0; q < ammountOfApproximation; q++){
+                    for (int q = 0; q < amountOfApproximation; q++){
                         median.addValue(ride.getAccelerometerData().get(i-q));
                     }
                     double accel = median.getPercentile(40);

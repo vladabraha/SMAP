@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -24,6 +25,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -46,7 +48,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private TextView txtLocation;
 
     private DrawerLayout drawer;
-    private  NavigationView navigationView;
+    private NavigationView navigationView;
 
     private SensorManager mSensorManager;
     private Sensor accelerometer;
@@ -68,7 +70,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private GraphView graph;
 
-    private boolean locationUpdateStarted = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,12 +80,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         Button btnPause = findViewById(R.id.btnPause);
         Button btnStart = findViewById(R.id.btnStart);
-//        Button btnNew = findViewById(R.id.btnNew);
-        Button btnMapBox = findViewById(R.id.btnMapBoxActivity);
-//        Button btnOverview = findViewById(R.id.btnOverView);
+//        Button btnMapBox = findViewById(R.id.btnMapBoxActivity);
 
-        Button btnStartUpdates = findViewById(R.id.btnStartUpdates);
-        Button btnStopUpdates = findViewById(R.id.btnStopUpdates);
+//        Button btnStartUpdates = findViewById(R.id.btnStartUpdates);
+//        Button btnStopUpdates = findViewById(R.id.btnStopUpdates);
 
         graph = findViewById(R.id.graph);
 
@@ -113,35 +112,57 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
 
-        //spusteni aktualizace polohy
-        btnStartUpdates.setOnClickListener(view -> {
-            checkPermission();
-            locationUpdateStarted = true;
-//                startUpdates();
-        });
+        //nastavení hodnoty podle poslední nastavené hodnoty (pokud byla, kdyby ne, tak je tam default value)
+        SharedPreferences sharedPref = MainActivity.this.getSharedPreferences(getString(R.string.amountOfApproximation), MODE_PRIVATE);
+        final int defaultValue = 4;
+        final int amountOfApproximation = sharedPref.getInt(getString(R.string.amountOfApproximation), defaultValue); //zde se získají uložená data
 
-        btnStopUpdates.setOnClickListener(view -> {
-            if (locationUpdateStarted) {
-                stopUpdates();
-                locationUpdateStarted = false;
+        //seekbar pro nastavení míry aproximace
+        TextView seekBarProgress = findViewById(R.id.txtAmountOfApproximation);
+        SeekBar seekBar = findViewById(R.id.seekBar);
+        seekBar.setMax(50);
+        seekBar.setProgress(amountOfApproximation);
+        seekBarProgress.setText(String.valueOf(amountOfApproximation));
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                seekBarProgress.setText(String.valueOf(progress));
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                //uložení čísla pro HeatMap aktivity do sharedPreferences
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putInt(getString(R.string.amountOfApproximation), seekBar.getProgress());
+                editor.apply();
             }
         });
 
-
-//        btnNew.setOnClickListener(view -> {
-//            Intent notificationIntent = new Intent(MainActivity.this, HereMapsMeasurement.class);
-//            startActivity(notificationIntent);
+//        //spusteni aktualizace polohy
+//        btnStartUpdates.setOnClickListener(view -> {
+//            checkPermission();
+//            locationUpdateStarted = true;
+////                startUpdates();
+//        });
+//
+//        btnStopUpdates.setOnClickListener(view -> {
+//            if (locationUpdateStarted) {
+//                stopUpdates();
+//                locationUpdateStarted = false;
+//            }
 //        });
 
-        btnMapBox.setOnClickListener(view -> {
-            Intent mapBox = new Intent(MainActivity.this, MapBox.class);
-            startActivity(mapBox);
-        });
 
-//        btnOverview.setOnClickListener(view -> {
-//            Intent rideOverview = new Intent(this, RideOverview.class);
-//            startActivity(rideOverview);
+//        btnMapBox.setOnClickListener(view -> {
+//            Intent mapBox = new Intent(MainActivity.this, MapBox.class);
+//            startActivity(mapBox);
 //        });
+
 
         //------------------------------------------------------------------------
         // NAVIGATION DRAWER MENU
@@ -200,10 +221,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         } else if (id == R.id.nav_heat_map) {
             Intent rideOverview = new Intent(this, HeatMap.class);
             startActivityForResult(rideOverview, 3);
-        }else if (id == R.id.nav_settings) {
+        } else if (id == R.id.nav_settings) {
 
         }
-
 
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

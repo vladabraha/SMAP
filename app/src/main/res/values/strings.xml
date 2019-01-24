@@ -5,6 +5,6 @@
     <string name="ticker_text">Kde jsem</string>
     <string name="description_graph">Graf otřesů</string>
     <string name="hello_blank_fragment">Prazdny fragment </string>
-
+    <string name="amountOfApproximation">amountOfApproximation</string>
 
 </resources>
