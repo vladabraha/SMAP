@@ -120,6 +120,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //seekbar pro nastavení míry aproximace
         TextView seekBarProgress = findViewById(R.id.txtAmountOfApproximation);
         SeekBar seekBar = findViewById(R.id.seekBar);
+        seekBar.setMin(1);
         seekBar.setMax(50);
         seekBar.setProgress(amountOfApproximation);
         seekBarProgress.setText(String.valueOf(amountOfApproximation));

@@ -159,7 +159,7 @@ public class HeatMap extends Activity {
                     for (int q = 0; q < amountOfApproximation; q++){
                         median.addValue(ride.getAccelerometerData().get(i-q));
                     }
-                    double accel = median.getPercentile(40);
+                    double accel = median.getMean();
                     GeoPolyline polyline = new GeoPolyline(positionPoints);
                     MapPolyline mapPolyline = new MapPolyline(polyline);
                     mapPolyline.setLineColor(interpolateColor(Color.GREEN, Color.RED, (float) accel / (float) difference));
