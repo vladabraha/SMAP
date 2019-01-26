@@ -6,7 +6,7 @@ import java.util.List;
 
 import cz.uhk.fim.brahavl1.smartmeasurment.Model.Coordinate;
 
-public class Ride implements Serializable{
+public class Ride implements Serializable, Comparable<Ride> {
 
     private String name;
     private Date date;
@@ -56,5 +56,10 @@ public class Ride implements Serializable{
         this.date = date;
     }
 
+
+    @Override
+    public int compareTo(Ride ride) {
+        return ride.getDate().compareTo(this.getDate());
+    }
 
 }

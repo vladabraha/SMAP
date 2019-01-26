@@ -1,5 +1,6 @@
 package cz.uhk.fim.brahavl1.smartmeasurment.Activity;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
@@ -29,6 +30,8 @@ import org.apache.commons.math3.stat.StatUtils;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import cz.uhk.fim.brahavl1.smartmeasurment.Database.DatabaseConnector;
@@ -114,18 +117,17 @@ public class RideOverview extends AppCompatActivity implements RecyclerItemTouch
                     rideList.add(postSnapshot.getValue(Ride.class));
 
                     // specify an adapter (see also next example)
+                    Collections.sort(rideList); //seřadí podle datumu
                     mAdapter = new RideListAdapter(rideList);
                     recyclerView.setAdapter(mAdapter);
 
                     //Pro vyhledání maxima a minima v novém datasetu (slouží pro optimalizaci, aby se nemusely procházet všechna data)
                     isSettingsSame = true;
-//                    List <Ride> missingRideInMinMaxCompute = new ArrayList<>();
                     if (settings != null){
                         for (Ride ride : rideList){
-                            if (!settings.getListOfLastRide().contains(ride.getDate())){
+                            if (!settings.getListOfLastRide().contains(ride.getDate()))
                                 isSettingsSame = false;
-//                                missingRideInMinMaxCompute.add(ride);
-                            }else{
+                            else{
                                 isSettingsSame = true;
                             }
                         }
@@ -154,7 +156,6 @@ public class RideOverview extends AppCompatActivity implements RecyclerItemTouch
             @Override
             public void onClick(View view, int position) {
                 Ride ride = rideList.get(position);
-//                Toast.makeText(getApplicationContext(), ride.getName() + " is selected!", Toast.LENGTH_SHORT).show();
 
                 if (settings != null){
                     double historyMax = settings.getMaxOfAllRides();
@@ -182,8 +183,10 @@ public class RideOverview extends AppCompatActivity implements RecyclerItemTouch
         // NAVIGATION DRAWER MENU
         drawer = findViewById(R.id.drawer_layout);
         ActionBar actionbar = getSupportActionBar();
-        actionbar.setDisplayHomeAsUpEnabled(true); //hodi do levyho horniho rohu definovanou ikkonu (hamburger menu)
-        actionbar.setHomeAsUpIndicator(R.drawable.ic_menu);
+        if (actionbar != null){
+            actionbar.setDisplayHomeAsUpEnabled(true); //hodi do levyho horniho rohu definovanou ikkonu (hamburger menu)
+            actionbar.setHomeAsUpIndicator(R.drawable.ic_menu);
+        }
         navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         navigationView.getMenu().getItem(1).setChecked(true);
@@ -221,8 +224,7 @@ public class RideOverview extends AppCompatActivity implements RecyclerItemTouch
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
-    @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
@@ -239,7 +241,7 @@ public class RideOverview extends AppCompatActivity implements RecyclerItemTouch
             startActivityForResult(rideOverview, 3);
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
@@ -280,7 +282,6 @@ public class RideOverview extends AppCompatActivity implements RecyclerItemTouch
             });
             snackbar.setActionTextColor(Color.YELLOW);
             snackbar.show();
-//            Log.d("hoo",String.valueOf(viewHolder.getAdapterPosition()));
             databaseConnector.removeRide(deletedItem);
         }
     }
@@ -290,11 +291,13 @@ public class RideOverview extends AppCompatActivity implements RecyclerItemTouch
      * percentil - aby ořezal outliery (vzdáleného hodnoty)
      */
     //co ma prijit, progress a co se ma vratit z AsyncTasku
+    @SuppressLint("StaticFieldLeak")
     private class ComputeDataForHeatMap extends AsyncTask<List<Ride>, Integer, List<Double>> {
 
 
+        @SafeVarargs
         @Override
-        protected List<Double> doInBackground(List<Ride>... lists) {
+        protected final List<Double> doInBackground(List<Ride>... lists) {
             DescriptiveStatistics statistic = new DescriptiveStatistics();
             for (Ride ride : rideList){
                 for (Float accelData : ride.getAccelerometerData()){
@@ -313,14 +316,12 @@ public class RideOverview extends AppCompatActivity implements RecyclerItemTouch
         }
 
         protected void onProgressUpdate(Integer... progress) {
-
 //            Log.d("hoo", "tak už je hotovo " + String.valueOf(progress[0]));
         }
 
 
         protected void onPostExecute(List<Double> list) {
             finishedCalculation = true;
-            Log.d("hoo", "tak už");
         }
 
 
