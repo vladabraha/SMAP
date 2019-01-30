@@ -15,7 +15,6 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -26,18 +25,14 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import org.apache.commons.math3.stat.StatUtils;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import cz.uhk.fim.brahavl1.smartmeasurment.Database.DatabaseConnector;
-import cz.uhk.fim.brahavl1.smartmeasurment.MainActivity;
 import cz.uhk.fim.brahavl1.smartmeasurment.Model.Ride;
-import cz.uhk.fim.brahavl1.smartmeasurment.Model.Settings;
 import cz.uhk.fim.brahavl1.smartmeasurment.R;
 import cz.uhk.fim.brahavl1.smartmeasurment.Recycler.RecyclerItemTouchHelper;
 import cz.uhk.fim.brahavl1.smartmeasurment.Recycler.RecyclerTouchListener;
@@ -52,7 +47,7 @@ public class RideOverview extends AppCompatActivity implements RecyclerItemTouch
     private DatabaseConnector databaseConnector = new DatabaseConnector();
 
     private List<Ride> rideList = new ArrayList<>();
-    private Settings settings;
+    private cz.uhk.fim.brahavl1.smartmeasurment.Model.Settings settings;
 
     private LinearLayout linearLayout;
 
@@ -94,7 +89,7 @@ public class RideOverview extends AppCompatActivity implements RecyclerItemTouch
                 // This method is called once with the initial value and again
                 // whenever data at this location is updated.
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                    settings = postSnapshot.getValue(Settings.class);
+                    settings = postSnapshot.getValue(cz.uhk.fim.brahavl1.smartmeasurment.Model.Settings.class);
                 }
             }
             @Override
@@ -234,7 +229,7 @@ public class RideOverview extends AppCompatActivity implements RecyclerItemTouch
         } else if (id == R.id.nav_overview) {
 
         } else if (id == R.id.nav_settings) {
-            Intent rideOverview = new Intent(this, MainActivity.class);
+            Intent rideOverview = new Intent(this, Settings.class);
             startActivityForResult(rideOverview, 2);
         } else if (id == R.id.nav_heat_map) {
             Intent rideOverview = new Intent(this, HeatMap.class);
@@ -273,7 +268,7 @@ public class RideOverview extends AppCompatActivity implements RecyclerItemTouch
 
             // showing snack bar with Undo option
             Snackbar snackbar = Snackbar
-                    .make(linearLayout, name + " ride has been deleted", Snackbar.LENGTH_LONG);
+                    .make(linearLayout, name + " has been deleted", Snackbar.LENGTH_LONG);
             snackbar.setAction("UNDO", view -> {
                  // tady se udělá akce po kliknuti na tlačítko undo
                 ((RideListAdapter) mAdapter).restoreItem(deletedItem, deletedIndex);

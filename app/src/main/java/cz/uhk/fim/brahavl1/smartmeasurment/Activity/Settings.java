@@ -1,4 +1,4 @@
-package cz.uhk.fim.brahavl1.smartmeasurment;
+package cz.uhk.fim.brahavl1.smartmeasurment.Activity;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -38,12 +38,9 @@ import org.apache.commons.math3.stat.StatUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-import cz.uhk.fim.brahavl1.smartmeasurment.Activity.HeatMap;
-import cz.uhk.fim.brahavl1.smartmeasurment.Activity.HereMapsMeasurement;
-import cz.uhk.fim.brahavl1.smartmeasurment.Activity.MapBox;
-import cz.uhk.fim.brahavl1.smartmeasurment.Activity.RideOverview;
+import cz.uhk.fim.brahavl1.smartmeasurment.R;
 
-public class MainActivity extends AppCompatActivity implements SensorEventListener, NavigationView.OnNavigationItemSelectedListener {
+public class Settings extends AppCompatActivity implements SensorEventListener, NavigationView.OnNavigationItemSelectedListener {
 
     private TextView txtLocation;
 
@@ -113,7 +110,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         });
 
         //nastavení hodnoty podle poslední nastavené hodnoty (pokud byla, kdyby ne, tak je tam default value)
-        SharedPreferences sharedPref = MainActivity.this.getSharedPreferences(getString(R.string.amountOfApproximation), MODE_PRIVATE);
+        SharedPreferences sharedPref = Settings.this.getSharedPreferences(getString(R.string.amountOfApproximation), MODE_PRIVATE);
         final int defaultValue = 4;
         final int amountOfApproximation = sharedPref.getInt(getString(R.string.amountOfApproximation), defaultValue); //zde se získají uložená data
 
@@ -160,7 +157,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
 
 //        btnMapBox.setOnClickListener(view -> {
-//            Intent mapBox = new Intent(MainActivity.this, MapBox.class);
+//            Intent mapBox = new Intent(Settings.this, MapBox.class);
 //            startActivity(mapBox);
 //        });
 
@@ -214,7 +211,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         int id = item.getItemId();
 
         if (id == R.id.nav_start_measurement) {
-            Intent notificationIntent = new Intent(MainActivity.this, HereMapsMeasurement.class);
+            Intent notificationIntent = new Intent(Settings.this, HereMapsMeasurement.class);
             startActivityForResult(notificationIntent, 1);
         } else if (id == R.id.nav_overview) {
             Intent rideOverview = new Intent(this, RideOverview.class);

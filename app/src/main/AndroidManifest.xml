@@ -32,7 +32,7 @@
             android:name=".Activity.HeatMap"
             android:theme="@android:style/Theme.Holo.Light.NoActionBar.Fullscreen"/>
 
-        <activity android:name=".MainActivity">
+        <activity android:name=".Activity.Settings">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -42,7 +42,7 @@
         <activity
             android:name=".Activity.HereMapsMeasurement"
             android:launchMode="singleInstance"
-            android:parentActivityName=".MainActivity" />
+            android:parentActivityName=".Activity.Settings" />
 
         <meta-data
             android:name="com.here.android.maps.appid"
