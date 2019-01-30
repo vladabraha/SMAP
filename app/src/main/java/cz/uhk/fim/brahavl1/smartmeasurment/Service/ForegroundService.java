@@ -58,6 +58,8 @@ public class ForegroundService extends Service implements SensorEventListener {
     private float gravity[] = new float[3];
     private float linear_acceleration[] = new float[3];
 
+    private boolean firstLocationUpdate = true;
+
     Callbacks activity; //tímhle se můžou volat metody v interfacu
 
     public ForegroundService() {
@@ -98,6 +100,13 @@ public class ForegroundService extends Service implements SensorEventListener {
                     return;
                 }
                 for (Location location : locationResult.getLocations()) {
+                    //je tu kvuli tomu, aby to nebralo prvni location update z poslední zname pozice
+                    if (firstLocationUpdate){
+                        firstLocationUpdate = false;
+                        zPoints.clear();
+                        return;
+                    }
+
                     // Update UI with location data
                     float sum = 0;
                     int count = 0;

@@ -1,13 +1,16 @@
 package cz.uhk.fim.brahavl1.smartmeasurment.Activity;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
@@ -55,6 +58,7 @@ public class HeatMap extends Activity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
         //---------------------------------------------------------------------
         //MAP
         setContentView(R.layout.activity_heat_map);
@@ -67,6 +71,12 @@ public class HeatMap extends Activity {
                 // retrieve a reference of the map from the map fragment
                 map = mapFragment.getMap();
 
+                //provede dotaz na opravenni a pripadne se zepta o povoleni, kdyby nedostal, hodí default location
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(HeatMap.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+                    map.setCenter(new GeoCoordinate(50.2105358,
+                            15.8343583), Map.Animation.NONE);
+                }
             } else {
                 System.out.println("ERROR: Cannot initialize Map Fragment");
             }
